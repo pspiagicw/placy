@@ -7,7 +7,7 @@ test:
 format:
 	poetry run black placy tests
 doc:
-	pydocstyle
+	poetry run pydocstyle
 	poetry run pdoc -o docs placy
 run:
 	poetry run python -m placy
