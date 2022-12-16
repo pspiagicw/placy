@@ -1,14 +1,14 @@
+test: format
+	poetry run pytest
 init:
 	poetry install
 	poetry run pre-commit install
-	pre-commit
-test:
-	poetry run pytest
+	poetry run pre-commit
 format:
-	poetry run black placy tests
+	poetry run black authentication tests
 doc:
 	poetry run pydocstyle
-	poetry run pdoc -o docs placy
-run:
-	poetry run python -m placy
+	poetry run pdoc -o docs/authentication src/authenticatoin
+run: format
+	poetry run python -m authentication
 .PHONY: init test format doc
