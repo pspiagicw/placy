@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { TouchableOpacity, View } from "react-native";
+import { useEffect, useState } from "react";
+import { View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native/"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -8,6 +8,8 @@ import { useDispatch, useSelector } from "react-redux";
 import useAuthService from "../hooks/api/authService";
 import Auth from "../screens/Auth"
 import { logoutUser } from "../store/reducers/authSlice";
+import linking from "./linking";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 const Routes = () => {
@@ -31,9 +33,17 @@ const Routes = () => {
         </AuthStack.Navigator>
     )
 
-    const TempHomeScreen = () => (
-        <View><Text>Hello</Text><Button onPress={() => dispatch(logoutUser())}><Text>Logout</Text></Button></View>
-    )
+    const TempHomeScreen = () => {
+        const [tokenFromStorage, setTokenFromStorage] = useState('')
+        AsyncStorage.getItem('@token').then(token => setTokenFromStorage(token));
+
+        return (<View>
+            <Text>Hello</Text>
+            <Button onPress={() => dispatch(logoutUser())}><Text>Logout</Text></Button>
+            <Text>token from store {authService.token}</Text>
+            <Text>token from storage {tokenFromStorage}</Text>
+        </View>)
+    }
     const AppStackScreens = () => (
         <AppStack.Navigator>
             <AppStack.Screen name="Home" component={TempHomeScreen} />
@@ -42,7 +52,7 @@ const Routes = () => {
 
     return (
         <SafeAreaProvider>
-            <NavigationContainer>
+            <NavigationContainer linking={linking}>
                 <View style={{ flex: 1 }}>
                     {
                         isLoading &&
