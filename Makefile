@@ -8,7 +8,7 @@ format:
 	poetry run black authentication tests
 doc:
 	poetry run pydocstyle
-	poetry run pdoc -o docs/authentication src/authenticatoin
+	poetry run pdoc -o docs/authentication authentication
 run: format
 	poetry run python -m authentication
 .PHONY: init test format doc
