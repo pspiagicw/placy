@@ -38,10 +38,8 @@ const useAuthService = () => {
             if (!token) return;
             const authenticatedAxios = getAuthenticatedAxios('/users', token);
             // const user = await (await authenticatedAxios.get('/me')).data['user'];
-            let user = null;
-            await mockDelayedResolve(() => {
-                user = { role: "user", email: "test@example.com", exp: 1666073513.056, iat: 1666044713 }
-            }, 500)
+            const user = { role: "user", email: "test@example.com", exp: 1666073513.056, iat: 1666044713 }
+            await mockDelayedResolve(() => {}, 500)
             dispatch(loginUser(token))
             return user;
         } catch (error) {
