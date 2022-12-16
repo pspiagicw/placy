@@ -1,12 +1,16 @@
+import { useEffect } from "react";
+import { TouchableOpacity, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native/"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
-import Auth from "../screens/Auth"
-import { useSelector } from "react-redux";
-import { Text } from "react-native-paper";
-import { View } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { Button, Text } from "react-native-paper";
+import { useDispatch, useSelector } from "react-redux";
 import useAuthService from "../hooks/api/authService";
-import { useEffect } from "react";
-export default Routes = () => {
+import Auth from "../screens/Auth"
+import { logoutUser } from "../store/reducers/authSlice";
+
+
+const Routes = () => {
 
     const isLoading = useSelector(state => state.auth.isLoading);
     const isSignedIn = useSelector(state => state.auth.isLoggedIn);
@@ -14,6 +18,8 @@ export default Routes = () => {
     const AppStack = createNativeStackNavigator();
 
     const authService = useAuthService()
+
+    const dispatch = useDispatch()
 
     useEffect(() => {
         authService.getUserFromToken()
@@ -25,24 +31,31 @@ export default Routes = () => {
         </AuthStack.Navigator>
     )
 
+    const TempHomeScreen = () => (
+        <View><Text>Hello</Text><Button onPress={() => dispatch(logoutUser())}><Text>Logout</Text></Button></View>
+    )
     const AppStackScreens = () => (
         <AppStack.Navigator>
-            <AppStack.Screen name="Home" component={()=><View><Text>Hello</Text></View>}/>
+            <AppStack.Screen name="Home" component={TempHomeScreen} />
         </AppStack.Navigator>
     )
 
     return (
-        <NavigationContainer>
-            <View style={{ flex: 1 }}>
-                {
-                    isLoading &&
-                    <View style={{ display: 'flex', flex: 1, justifyContent: 'center' }}>
-                        <Text style={{ textAlign: 'center', }}>Loading....</Text>
-                    </View>
-                }
-                {!isLoading && !isSignedIn && <AuthStackScreens />}
-                {!isLoading && isSignedIn && <AppStackScreens />}
-            </View>
-        </NavigationContainer>
+        <SafeAreaProvider>
+            <NavigationContainer>
+                <View style={{ flex: 1 }}>
+                    {
+                        isLoading &&
+                        <View style={{ display: 'flex', flex: 1, justifyContent: 'center' }}>
+                            <Text style={{ textAlign: 'center', }}>Loading....</Text>
+                        </View>
+                    }
+                    {!isLoading && !isSignedIn && <AuthStackScreens />}
+                    {!isLoading && isSignedIn && <AppStackScreens />}
+                </View>
+            </NavigationContainer>
+        </SafeAreaProvider>
     )
 }
+
+export default Routes
