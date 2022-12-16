@@ -1,4 +1,4 @@
-"""Module to contain models for authentication API."""
+"""Module to contain models for API."""
 
 from pydantic import BaseModel
 

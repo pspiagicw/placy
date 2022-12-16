@@ -3,7 +3,7 @@
 
 from fastapi.testclient import TestClient
 
-from authentication.routes import app
+from backend.routes import app
 
 client = TestClient(app)
 

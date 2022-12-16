@@ -5,10 +5,10 @@ init:
 	poetry run pre-commit install
 	poetry run pre-commit
 format:
-	poetry run black authentication tests
+	poetry run black backend tests
 doc:
 	poetry run pydocstyle
-	poetry run pdoc -o docs/authentication authentication
+	poetry run pdoc -o docs/backend backend
 run: format
-	poetry run python -m authentication
+	poetry run python -m backend
 .PHONY: init test format doc

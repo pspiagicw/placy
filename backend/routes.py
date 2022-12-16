@@ -1,7 +1,7 @@
-"""Module to route all authentication requests."""
+"""Module to route all backend requests."""
 from fastapi import FastAPI
 
-from authentication.models import Health
+from backend.models import Health
 
 
 app = FastAPI()
