@@ -10,4 +10,4 @@ app = FastAPI()
 @app.get("/health")
 def checkhealth():
     """Route to handle health request."""
-    return {"Status": "OK"}
+    return {"status": "OK"}
