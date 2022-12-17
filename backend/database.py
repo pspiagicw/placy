@@ -2,7 +2,7 @@
 
 
 from backend.models import User
-from typing import Tuple
+from typing import Tuple, Any
 from pymongo import MongoClient
 import http
 
@@ -24,7 +24,7 @@ class DatabaseService:
         print(user)
         return ""
 
-    def search_user(self, user: User) -> User | None:
+    def search_user(self, user: User):
         """Search user in the database."""
         print(user)
         return None
@@ -68,7 +68,7 @@ class MongoService(DatabaseService):
 
         return (id, "", http.HTTPStatus.CREATED)
 
-    def search_user(self, user: User) -> User | None:
+    def search_user(self, user: User) -> Any:
         """Search for a given user in MongoDB database."""
         if self.client == None:
             return None

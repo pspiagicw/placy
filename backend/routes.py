@@ -2,14 +2,16 @@
 
 from backend.database import DatabaseService
 from backend.models import User
-from typing import Any
+from typing import Any, Tuple
 import http
+import jwt
+from datetime import datetime, timedelta
 
 
 class Router:
     """Router handles all routing."""
 
-    def __init__(self, db: DatabaseService, config: dict[str, str | None]):
+    def __init__(self, db: DatabaseService, config: dict[str, str]):
         """Construct the Router class."""
         self.db = db
         self.config = config
@@ -39,7 +41,7 @@ class Router:
             "payload": user_json,
         }
 
-    def signin(self, user: User):
+    def login(self, user: User):
         """Route to handle user signin."""
         result = self.db.search_user(user)
 
@@ -50,10 +52,40 @@ class Router:
                 "error": "User not found",
             }
 
+        if result["password"] != user.password:
+            return {
+                "status": http.HTTPStatus.BAD_REQUEST,
+                "isSuccess": False,
+                "error": "email/password wrong.",
+            }
+
+        (token, refresh) = self.generateToken(user)
+
         return {
+            "status": http.HTTPStatus.OK,
             "isSuccess": True,
             "error": None,
-            "payload": user,
-            "token": "Not possible",
-            "refresh": "Really not possible",
+            "payload": user.dict(),
+            "token": token,
+            "refresh": refresh,
         }
+
+    def generateToken(self, user: User) -> Tuple[str, str]:
+        """Generate a pair of JWT Token."""
+        payload = user.dict(exclude={"password"}, exclude_none=True)
+
+        payload["exp"] = datetime.now() + timedelta(days=1)
+
+        key = ""
+        if "SECRET_KEY" in self.config:
+            key = self.config["SECRET_KEY"]
+        else:
+            return ("", "")
+
+        token = jwt.encode(payload=payload, key=key)
+
+        payload["exp"] = datetime.now() + timedelta(days=7)
+
+        refresh = jwt.encode(payload=payload, key=key)
+
+        return (token, refresh)

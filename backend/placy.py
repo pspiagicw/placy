@@ -43,7 +43,7 @@ class Placy:
 
         @self.app.post("/login", status_code=200)
         def login(user: User):
-            response = self.router.signin(user)
+            response = self.router.login(user)
             return JSONResponse(status_code=response["status"], content=response)
 
     def run(self) -> None:
