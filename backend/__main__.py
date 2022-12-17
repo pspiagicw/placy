@@ -1,7 +1,18 @@
 """Module to run backend."""
-import uvicorn
 
-from backend.routes import app
+from backend.database import MongoService
+from backend.placy import Placy
+from fastapi import FastAPI
+from dotenv import dotenv_values
+from backend.routes import Router
+
 
 if __name__ == "__main__":
-    uvicorn.run(app, port=5000, log_level="info")
+    app = FastAPI()
+    config = dotenv_values()
+    database = MongoService()
+    router = Router(database, config)
+    placy = Placy(app, database, config, router)
+    placy.setup()
+    placy.routes()
+    placy.run()
