@@ -1,7 +1,11 @@
 """Module to run backend."""
-import uvicorn
 
-from backend.routes import app
+from backend.placy import Placy
+from fastapi import FastAPI
+
 
 if __name__ == "__main__":
-    uvicorn.run(app, port=5000, log_level="info")
+    app = FastAPI()
+    placy = Placy(app, None, {})
+    placy.setup_routes()
+    placy.run()

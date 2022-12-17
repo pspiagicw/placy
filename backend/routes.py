@@ -1,13 +1,8 @@
 """Module to route all backend requests."""
-from fastapi import FastAPI
 
-from backend.models import Health
-
-
-app = FastAPI()
+from backend.database import DatabaseService
 
 
-@app.get("/health")
-def checkhealth():
+def checkhealth(db: DatabaseService, config: dict[str, str]):
     """Route to handle health request."""
     return {"status": "OK"}

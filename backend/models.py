@@ -1,4 +1,4 @@
-"""Module to contain models for API."""
+"""Module to contain models for back API."""
 
 from pydantic import BaseModel
 
