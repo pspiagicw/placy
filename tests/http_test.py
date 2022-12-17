@@ -3,12 +3,14 @@
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
+from backend.database import DatabaseService
+
 from backend.placy import Placy
 
 app = FastAPI()
 
-placy = Placy(app, None, {})
-placy.setup_routes()
+placy = Placy(app, DatabaseService(), {})
+placy.routes()
 client = TestClient(app)
 
 
