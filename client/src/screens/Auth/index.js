@@ -43,7 +43,7 @@ const Auth = () => {
 const styles = StyleSheet.create({
     container: {
         display: 'flex',
-        backgroundColor: 'red'
+        backgroundColor: 'green'
     },
     fieldsContainer: {
         display: 'flex',
