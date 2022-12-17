@@ -9,18 +9,24 @@ This README will be elaborated later.
 
 For doing this you need few applications installed.
 
-- `make`
+- `poethepoet`
 - `poetry`
 
 
 You can install make using your package manager, or using other on windows.
 
 `poetry` can be installed using `pip`/`pipx` just like any other module.
+`poethepoet` can be installed using `pip`/`pipx` just like any other module.
+
+For installing those.
+```sh
+pip install poetry poethepoet.
+```
 
 After doing this simply Run
 
 ```sh
-make init
+poe init
 ```
 This would do multiple things
 - Setup a virtual environment automatically.
@@ -32,7 +38,7 @@ This would do multiple things
 ## Format code
 
 ```sh
-make format
+poe format
 ```
 
 
@@ -40,7 +46,7 @@ make format
 
 Simple
 ```sh
-make run
+poe run
 ```
 
 API documentation can be found after starting the application using `make run`, and then accessing `localhost:5000/docs` or `localhost:5000/redocs`.
@@ -48,7 +54,7 @@ API documentation can be found after starting the application using `make run`, 
 ## Generate documentation
 
 ```sh
-make doc
+poe doc
 ```
 
 Documentation would be at `docs/authentication`. A temporary location, serve it using a simple http server `python -m http.server` and then view on your browser.
