@@ -8,3 +8,16 @@ class Health(BaseModel):
 
     version: str
     client: str
+
+
+class User(BaseModel):
+    """Model for user."""
+
+    name: str
+    username: str
+    email: str
+    password: str
+    phone_no: int
+    branch: str
+    year: int
+    gpa: float
