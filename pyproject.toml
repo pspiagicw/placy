@@ -20,6 +20,12 @@ pre-commit = "^2.20.0"
 pydocstyle = "^6.1.1"
 toml = "^0.10.2"
 
+[tool.poe.tasks]
+test = "pytest"
+run = "python -m backend"
+format = "black backend tests"
+init = [ { shell = "poetry install"} , { shell = "poetry run pre-commit install"} , { shell = "poetry run pre-commit "} ]
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
