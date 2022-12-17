@@ -31,6 +31,14 @@ const useAuthService = () => {
         })
     }
 
+    const forgot = async (email) => {
+
+    }
+
+    const reset = async (email, otp, password) => {
+
+    }
+
     const getUserFromToken = async () => {
         try {
             dispatch(setLoading())
@@ -39,7 +47,7 @@ const useAuthService = () => {
             const authenticatedAxios = getAuthenticatedAxios('/users', token);
             // const user = await (await authenticatedAxios.get('/me')).data['user'];
             const user = { role: "user", email: "test@example.com", exp: 1666073513.056, iat: 1666044713 }
-            await mockDelayedResolve(() => {}, 500)
+            await mockDelayedResolve(() => { }, 500)
             dispatch(loginUser(token))
             return user;
         } catch (error) {
@@ -52,7 +60,7 @@ const useAuthService = () => {
 
 
 
-    return { signup, getUserFromToken, token: tokenFromStore }
+    return { signup, forgot, reset, getUserFromToken, token: tokenFromStore }
 
 }
 

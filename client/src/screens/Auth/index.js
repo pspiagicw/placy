@@ -2,18 +2,19 @@ import { Platform, StyleSheet, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { Text, TextInput, Button } from 'react-native-paper'
 import useAuthService from '../../hooks/api/authService'
+import colors from '../../theme/colors'
 
-const Auth = () => {
+const Auth = ({ navigation }) => {
     const [isLoggingIn, setIsLoggingIn] = useState(true)
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const authService = useAuthService()
-    
+
     const handleSignup = () => {
         authService.signup(email, password)
     }
 
-    const handleLogin = () =>{
+    const handleLogin = () => {
         authService.signup(email, password)
     }
 
@@ -35,6 +36,8 @@ const Auth = () => {
                 <Text>Don't have an account?
                     <TouchableOpacity onPress={() => setIsLoggingIn(!isLoggingIn)}><Text>Signup</Text></TouchableOpacity>
                 </Text>
+
+                <TouchableOpacity onPress={() => navigation.navigate("Forgot")}><Text style={{ color: colors.primary }}>Forgot password?</Text></TouchableOpacity>
             </View>
         </View>
     )
@@ -43,12 +46,10 @@ const Auth = () => {
 const styles = StyleSheet.create({
     container: {
         display: 'flex',
-        backgroundColor: 'red'
     },
     fieldsContainer: {
         display: 'flex',
         flexDirection: 'column',
-        backgroundColor: 'blue'
     }
 })
 

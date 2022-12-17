@@ -14,6 +14,8 @@ import linking from "./linking";
 import CustomDrawer from "./Drawer";
 import colors from "../theme/colors";
 import Discover from "../screens/Discover";
+import ForgotPassword from "../screens/Auth/ForgotPassword";
+import VerifyPassword from "../screens/Auth/VerifyPassword";
 
 
 const Routes = () => {
@@ -33,8 +35,10 @@ const Routes = () => {
     }, [])
 
     const AuthStackScreens = () => (
-        <AuthStack.Navigator>
+        <AuthStack.Navigator screenOptions={{ animation: "slide_from_right" }}>
             <AuthStack.Screen name="Auth" component={Auth} />
+            <AuthStack.Screen name="Forgot" component={ForgotPassword} />
+            <AuthStack.Screen name="Verification" component={VerifyPassword} />
         </AuthStack.Navigator>
     )
 
