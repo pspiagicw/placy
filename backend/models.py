@@ -10,8 +10,8 @@ class User(BaseModel):
 
     username: str
     email: str
-    password: str
     role: str
+    password: str
 
     name: str | None
     year: int | None
