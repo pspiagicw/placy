@@ -1,6 +1,7 @@
 """Module to define the application."""
 
 from fastapi import FastAPI
+from fastapi import Header
 from fastapi.responses import JSONResponse
 import uvicorn
 from backend import routes
@@ -42,13 +43,18 @@ class Placy:
 
         @self.app.post("/signup", status_code=201)
         def signup(user: User):
-            response = self.router.signup(user)
-            return JSONResponse(status_code=response["status"], content=response)
+            (response, status_code) = self.router.signup(user)
+            return JSONResponse(status_code=status_code, content=response)
 
         @self.app.post("/login", status_code=200)
         def login(user: User):
-            response = self.router.login(user)
-            return JSONResponse(status_code=response["status"], content=response)
+            (response, status_code) = self.router.login(user)
+            return JSONResponse(status_code=status_code, content=response)
+
+        @self.app.get("/refresh")
+        def refresh(authorization: str | None = Header(default=None)):
+            (response, status_code) = self.router.refresh(authorization)
+            return JSONResponse(status_code=status_code, content=response)
 
     def run(self) -> None:
         """Run the app with given settings."""

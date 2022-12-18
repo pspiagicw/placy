@@ -75,9 +75,37 @@ def test_wrong_password():
     user_payload["password"] = "wrongpassword"
 
     response = client.post("/login", json=user_payload)
-    assert response.status_code == 200, "Status code not 200."
+    assert response.status_code == 400, "Status code not 400."
     json_response = response.json()
+    assert not json_response["isSuccess"], json_response["error"]
+    assert "token" not in json_response, "Token present"
+
+
+def test_token_refresh():
+    """Test token refresh endpoint."""
+    user_payload = generate_user()
+
+    response = client.post("/signup", json=user_payload)
+    assert response.status_code == 200, "Status code not 200."
+    assert response.json()["isSuccess"], "Request not a success."
+
+    response = client.post("/login", json=user_payload)
+    assert response.status_code == 200, "Status code not 200."
+
+    json_response = response.json()
+
     assert json_response["isSuccess"], "Request not a success."
+    assert json_response["token"], "Token empty"
+
+    response = client.get(
+        "/refresh",
+        headers={"Authorization": f"Bearer {json_response['token']}"},
+    )
+
+    json_response = response.json()
+
+    assert json_response["isSuccess"], json_response["error"]
+    assert response.status_code == 200, "Response not a success"
     assert json_response["token"], "Token empty"
 
 
