@@ -1,7 +1,7 @@
 """Module for database services."""
 
 
-from backend.models import User, OTP
+from placy.models import User, OTP
 from typing import Tuple, Any
 from pymongo import MongoClient
 import http

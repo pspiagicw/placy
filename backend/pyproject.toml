@@ -26,8 +26,8 @@ faker = "^15.3.4"
 
 [tool.poe.tasks]
 test = "pytest"
-run = "python -m backend"
-format = "black backend tests"
+run = "python -m placy"
+format = "black placy tests"
 init = [ { shell = "poetry install"} , { shell = "poetry run pre-commit install"} , { shell = "poetry run pre-commit "} ]
 
 [build-system]

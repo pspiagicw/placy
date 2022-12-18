@@ -1,11 +1,11 @@
 """Module to run backend."""
 
-from backend.database import MongoService
-from backend.placy import Placy
+from placy.database import MongoService
+from placy.placy import Placy
 from fastapi import FastAPI
 from dotenv import dotenv_values
-from backend.routes import Router
-from backend.logging import DefaultLogger
+from placy.routes import Router
+from placy.logging import DefaultLogger
 
 
 if __name__ == "__main__":

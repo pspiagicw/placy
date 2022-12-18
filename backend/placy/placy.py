@@ -4,10 +4,10 @@ from fastapi import FastAPI
 from fastapi import Header
 from fastapi.responses import JSONResponse
 import uvicorn
-from backend import routes
-from backend.database import DatabaseService
-from backend.models import UpdatePassword, User, Email
-from backend.logging import LoggingService
+from placy import routes
+from placy.database import DatabaseService
+from placy.models import UpdatePassword, User, Email
+from placy.logging import LoggingService
 
 
 class Placy:
