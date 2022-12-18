@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 import uvicorn
 from backend import routes
 from backend.database import DatabaseService
-from backend.models import User
+from backend.models import UpdatePassword, User, Email
 from backend.logging import LoggingService
 
 
@@ -56,6 +56,16 @@ class Placy:
             (response, status_code) = self.router.refresh(authorization)
             return JSONResponse(status_code=status_code, content=response)
 
+        @self.app.post("/forgot")
+        def forgot(email: Email):
+            (response, status_code) = self.router.forgot(email)
+            return JSONResponse(status_code=status_code, content=response)
+
+        @self.app.post("/reset")
+        def reset(update: UpdatePassword):
+            (response, status_code) = self.router.reset(update)
+            return JSONResponse(status_code=status_code, content=response)
+
     def run(self) -> None:
         """Run the app with given settings."""
-        uvicorn.run(self.app, port=5000, log_level="info")
+        uvicorn.run(self.app, port=5000, log_level="info", host="0.0.0.0")

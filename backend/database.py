@@ -1,7 +1,7 @@
 """Module for database services."""
 
 
-from backend.models import User
+from backend.models import User, OTP
 from typing import Tuple, Any
 from pymongo import MongoClient
 import http
@@ -29,6 +29,11 @@ class DatabaseService:
         print(user)
         return None
 
+    def add_otp(self, otp: OTP) -> Tuple[str, str, int]:
+        """Add OTP instance in the database."""
+        print(otp)
+        return ("", "", 0)
+
 
 class MongoService(DatabaseService):
     """Implemented subclass to manage connection with MongoDB."""
@@ -48,6 +53,11 @@ class MongoService(DatabaseService):
         collection = db["users"]
 
         self.user_collection = collection
+
+        db = self.client["placy"]
+        collection = db["otp"]
+
+        self.otp_collection = collection
 
     def add_user(self, user: User) -> Tuple[str, str, int]:
         """Add a user into MongoDB database."""
@@ -76,3 +86,17 @@ class MongoService(DatabaseService):
         result = self.user_collection.find_one({"email": user.email})
 
         return result
+
+    def add_otp(self, otp: OTP) -> Tuple[str, str, int]:
+        """Add the OTP instance to the MongoDB database."""
+        if self.client == None:
+            return (
+                "",
+                "Mongo connection is null.",
+                http.HTTPStatus.INTERNAL_SERVER_ERROR,
+            )
+
+        payload = otp.dict()
+        id = self.otp_collection.insert_one(payload).inserted_id
+
+        return (id, "", 200)

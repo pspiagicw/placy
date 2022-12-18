@@ -1,9 +1,10 @@
 """Module to route all backend requests."""
 
 from backend.database import DatabaseService
-from backend.models import User
+from backend.models import OTP, Email, User, UpdatePassword
 from typing import Any, Tuple
 import http
+import random
 import jwt
 from datetime import datetime, timedelta
 
@@ -15,6 +16,42 @@ class Router:
         """Construct the Router class."""
         self.db = db
         self.config = config
+
+    def generate_otp(self, email: str) -> OTP:
+        """Generate a OTP instance."""
+        otp = "".join([str(random.randint(0, 9)) for _ in range(6)])
+
+        exp = datetime.now() + timedelta(minutes=15)
+
+        instance = OTP(email=email, otp=otp, exp=exp, used=False)
+        return instance
+
+    def reset(self, update: UpdatePassword) -> Tuple[dict[str, Any], int]:
+        """Route to handle reset password requests."""
+        return ({"isSuccess": False, "error": "Not implemented yet."}, 500)
+
+    def forgot(self, email: Email) -> Tuple[dict[str, Any], int]:
+        """Route to handle forgot password requests."""
+        otp = self.generate_otp(email.email)
+
+        (id, errmsg, status_code) = self.db.add_otp(otp)
+
+        if id == "":
+            return (
+                {
+                    "isSuccess": False,
+                    "error": errmsg,
+                },
+                status_code,
+            )
+
+        return (
+            {
+                "isSuccess": True,
+                "error": None,
+            },
+            200,
+        )
 
     def refresh(self, token_header: str | None) -> Tuple[dict[str, Any], int]:
         """Route to handle JWT Token refresh."""
