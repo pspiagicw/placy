@@ -6,6 +6,7 @@ import uvicorn
 from backend import routes
 from backend.database import DatabaseService
 from backend.models import User
+from backend.logging import LoggingService
 
 
 class Placy:
@@ -15,6 +16,7 @@ class Placy:
         self,
         app: FastAPI,
         databaseService: DatabaseService,
+        loggingService: LoggingService,
         config: dict[str, str | None],
         router: routes.Router,
     ) -> None:
@@ -23,10 +25,12 @@ class Placy:
         self.app = app
         self.config = config
         self.router = router
+        self.logging_service = loggingService
 
     def setup(self) -> None:
         """Perform initialization for backend application."""
         self.db_service.setup(self.config)
+        self.logging_service.setup(self.config)
 
     def routes(self) -> None:
         """Route all requests."""

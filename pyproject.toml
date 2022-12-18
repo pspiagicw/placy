@@ -22,6 +22,7 @@ pdoc = "^12.3.0"
 pre-commit = "^2.20.0"
 pydocstyle = "^6.1.1"
 toml = "^0.10.2"
+faker = "^15.3.4"
 
 [tool.poe.tasks]
 test = "pytest"
