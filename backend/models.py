@@ -24,11 +24,12 @@ class User(BaseModel):
     reputation: float | None
     isBanned: bool | None
 
-    @validator("email")
-    def validate_email(cls, email: str):
-        """Validate email to end with @vitbhopal.ac.in."""
-        assert email.endswith("@vitbhopal.ac.in"), "Not a VIT Bhopal email ID."
-        return email
+    # VIT Validator.
+    # @validator("email")
+    # def validate_email(cls, email: str):
+    #     """Validate email to end with @vitbhopal.ac.in."""
+    #     assert email.endswith("@vitbhopal.ac.in"), "Not a VIT Bhopal email ID."
+    #     return email
 
     @validator("year")
     def validate_year(cls, year: int):
