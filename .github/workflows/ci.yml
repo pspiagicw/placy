@@ -20,6 +20,8 @@ jobs:
       - name: Ensure Formatted
         run: |
           poetry run black --check backend tests
+      - name: Setup local MongoDB
+        uses: supercharge/mongodb-github-actions@1.8.0
       - name: Ensure documentation
         run: |
           poetry run pydocstyle
