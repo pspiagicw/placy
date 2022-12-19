@@ -2,7 +2,7 @@
 
 from fastapi import FastAPI, Header, Response
 from placy.controllers.auth import AuthController
-from placy.models.auth import Auth
+from placy.models.auth import Auth, Profile
 from placy.models.response import AuthResponse, ErrorResponse, JWTRefreshResponse
 from pydantic import EmailStr
 
@@ -49,6 +49,20 @@ def setupAuthRoutes(app: FastAPI, controller: AuthController) -> None:
     )
     def forgot(email: EmailStr, temp: Response):
         response = controller.forgot(email)
+        temp.status_code = response.status
+        return response
+
+    @app.put(
+        "/auth/profile",
+        response_model=ErrorResponse,
+        response_description="Update the user's profile.",
+    )
+    def profile(
+        temp: Response,
+        profile: Profile,
+        authorization: str | None = Header(default=None),
+    ):
+        response = controller.profile(profile, authorization)
         temp.status_code = response.status
         return response
 

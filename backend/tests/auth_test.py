@@ -1,5 +1,8 @@
 """Module to provide simple http test."""
 
+import random
+from typing import Any
+
 from dotenv import dotenv_values
 from faker import Faker
 from fastapi import FastAPI
@@ -108,6 +111,45 @@ def test_token_refresh():
     assert json_response["refresh"], "Refresh token empty"
 
 
+def test_wrong_token_refresh():
+    """Test token refresh endpoint."""
+    user = generate_user()
+
+    assertSignUp(user)
+
+    _ = assertLogin(user)
+
+    response = client.get(
+        "/auth/refresh",
+        headers={"Authorization": f"Bearer bitchplease"},
+    )
+
+    json_response = response.json()
+    assert response.status_code != 200, json_response["errmsg"]
+    assert not json_response["success"], "Token was parsed."
+    assert "token" not in json_response, "Token present."
+    assert "refresh" not in json_response, "Refresh token present."
+
+
+def test_add_profile():
+    """Test adding profile to user."""
+    user = generate_user()
+
+    assertSignUp(user)
+
+    token = assertLogin(user)
+
+    profile = generate_profile()
+
+    response = client.put(
+        "/auth/profile", headers={"Authorization": f"Bearer {token}"}, json=profile
+    )
+
+    json_response = response.json()
+    assert response.status_code == 200, json_response["errmsg"]
+    assert json_response["success"], "Updation was not successfull."
+
+
 def generate_user() -> dict[str, str]:
     """Generate a fake user for testing."""
     faker = Faker()
@@ -119,3 +161,19 @@ def generate_user() -> dict[str, str]:
     }
 
     return user_payload
+
+
+def generate_profile() -> dict[str, Any]:
+    """Generate fake profile for user while testing."""
+    faker = Faker()
+
+    profile_payload = {
+        "name": faker.name(),
+        "year": random.randint(1, 5),
+        "gpa": random.randint(1, 10),
+        "communities": [],
+        "reputation": 0.0,
+        "isBanned": False,
+    }
+
+    return profile_payload
