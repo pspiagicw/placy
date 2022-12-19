@@ -1,7 +1,7 @@
 """Module for database services."""
 
 
-from placy.models import User, OTP
+from placy.models import User, OTP, Auth
 from typing import Tuple, Any
 from pymongo import MongoClient
 import http
@@ -19,14 +19,14 @@ class DatabaseService:
         print(config)
         pass
 
-    def add_user(self, user: User) -> str:
+    def add_user(self, user: User) -> Tuple[str, str, int]:
         """Add user to the database."""
         print(user)
-        return ""
+        return ("", "", 0)
 
-    def search_user(self, user: User):
+    def search_user(self, auth: Auth) -> User | None:
         """Search user in the database."""
-        print(user)
+        print(auth)
         return None
 
     def add_otp(self, otp: OTP) -> Tuple[str, str, int]:
@@ -68,7 +68,7 @@ class MongoService(DatabaseService):
                 http.HTTPStatus.INTERNAL_SERVER_ERROR,
             )
 
-        exists = self.search_user(user)
+        exists = self.search_user(user.auth)
 
         if exists:
             return ("", "User with email already exists.", http.HTTPStatus.CONFLICT)
@@ -78,14 +78,19 @@ class MongoService(DatabaseService):
 
         return (id, "", http.HTTPStatus.CREATED)
 
-    def search_user(self, user: User) -> Any:
+    def search_user(self, auth: Auth) -> User | None:
         """Search for a given user in MongoDB database."""
         if self.client == None:
             return None
 
-        result = self.user_collection.find_one({"email": user.email})
+        result = self.user_collection.find_one({"auth.email": auth.email})
 
-        return result
+        if result == None:
+            return result
+
+        user = User.parse_obj(result)
+
+        return user
 
     def add_otp(self, otp: OTP) -> Tuple[str, str, int]:
         """Add the OTP instance to the MongoDB database."""

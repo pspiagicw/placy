@@ -6,8 +6,15 @@ from fastapi.responses import JSONResponse
 import uvicorn
 from placy import routes
 from placy.database import DatabaseService
-from placy.models import UpdatePassword, User, Email
+from placy.models import (
+    UpdatePassword,
+    Email,
+    Auth,
+    AuthResponse,
+    ErrorResponse,
+)
 from placy.logging import LoggingService
+from fastapi import Response as Response
 
 
 class Placy:
@@ -36,20 +43,30 @@ class Placy:
     def routes(self) -> None:
         """Route all requests."""
 
-        @self.app.get("/health")
+        @self.app.get("/health", response_description="Check the health of the server.")
         def health():
-            response = self.router.checkhealth()
+            response = self.router.checkhealth(self.app.version)
             return response
 
-        @self.app.post("/signup", status_code=201)
-        def signup(user: User):
-            (response, status_code) = self.router.signup(user)
-            return JSONResponse(status_code=status_code, content=response)
+        @self.app.post(
+            "/signup",
+            response_model=AuthResponse | ErrorResponse,
+            response_model_exclude_none=True,
+        )
+        def signup(auth: Auth, temp: Response):
+            response = self.router.signup(auth)
+            temp.status_code = response.status
+            return response
 
-        @self.app.post("/login", status_code=200)
-        def login(user: User):
-            (response, status_code) = self.router.login(user)
-            return JSONResponse(status_code=status_code, content=response)
+        @self.app.post(
+            "/login",
+            response_model=AuthResponse | ErrorResponse,
+            response_model_exclude_none=True,
+        )
+        def login(auth: Auth, temp: Response):
+            response = self.router.login(auth)
+            temp.status_code = response.status
+            return response
 
         @self.app.get("/refresh")
         def refresh(authorization: str | None = Header(default=None)):

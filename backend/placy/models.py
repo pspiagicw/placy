@@ -1,67 +1,89 @@
 """Module to contain models for back API."""
 
-from typing import Union
-from pydantic import BaseModel, validator
+from enum import Enum
+from pydantic import BaseModel, EmailStr, Field
 import datetime
+from bson import ObjectId
+
+
+class ErrorResponse(BaseModel):
+    """Model for containing response."""
+
+    status: int
+    success: bool
+    errmsg: str
 
 
 class Email(BaseModel):
-    """Model for the email."""
+    """Model for containing email."""
 
-    email: str
+    email: EmailStr
+
+
+class RoleEnum(str, Enum):
+    """Enum to contain roles."""
+
+    user = "user"
+    officer = "officir"
+    moderator = "moderator"
+    admin = "admin"
 
 
 class UpdatePassword(BaseModel):
     """Model for updated password."""
 
-    email: str
-    otp: str
+    email: EmailStr
+    otp: str = Field(max_length=6, min_length=6)
     new_password: str
 
 
 class OTP(BaseModel):
     """Model to store OTP system."""
 
-    email: str
-    otp: str
+    email: EmailStr
+    otp: str = Field(max_length=6, min_length=6)
     exp: datetime.datetime
     used: bool
+
+
+class Auth(BaseModel):
+    """Model for the user."""
+
+    username: str
+    email: EmailStr
+    role: RoleEnum
+    password: str
+    salt: str | None
+
+
+class Profile(BaseModel):
+    """Model for Profile."""
+
+    name: str
+    year: int
+    gpa: float
+    communities: list[str]
+    reputation: float
+    isBanned: bool
 
 
 class User(BaseModel):
     """Model for the user."""
 
-    username: str
-    email: str
-    role: str
-    password: str
+    auth: Auth
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
+    profile_completed: bool
 
-    name: str | None
-    year: int | None
-    gpa: float | None
-    salt: str | None
-    created_at: datetime.datetime | None
-    updated_at: datetime.datetime | None
-    profile_completed: bool | None
-    communities: list[str] | None
-    reputation: float | None
-    isBanned: bool | None
+    profile: Profile | None
 
-    # VIT Validator.
-    # @validator("email")
-    # def validate_email(cls, email: str):
-    #     """Validate email to end with @vitbhopal.ac.in."""
-    #     assert email.endswith("@vitbhopal.ac.in"), "Not a VIT Bhopal email ID."
-    #     return email
 
-    @validator("year")
-    def validate_year(cls, year: int):
-        """Validate year of study."""
-        assert year in {1, 2, 3, 4, 5}, "Not a valid year of study."
-        return year
+class AuthResponse(BaseModel):
+    """Model for responding auth requests."""
 
-    @validator("gpa")
-    def validate_gpa(cls, gpa: int):
-        """Validate GPA."""
-        assert 0 < gpa < 10, "Not a valid 10 point GPA."
-        return gpa
+    status: int
+    success: bool
+    error: str | None
+    payload: User
+    token: str | None
+    refresh: str | None

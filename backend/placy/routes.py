@@ -1,9 +1,18 @@
 """Module to route all backend requests."""
 
 from placy.database import DatabaseService
-from placy.models import OTP, Email, User, UpdatePassword
+from fastapi.encoders import jsonable_encoder
+from placy.models import (
+    OTP,
+    Email,
+    User,
+    UpdatePassword,
+    Auth,
+    ErrorResponse,
+    AuthResponse,
+)
 from typing import Any, Tuple
-import http
+from http import HTTPStatus
 import random
 import jwt
 from datetime import datetime, timedelta
@@ -16,6 +25,17 @@ class Router:
         """Construct the Router class."""
         self.db = db
         self.config = config
+
+    def generate_hash(self, password: str) -> Tuple[str, str]:
+        """Generate a hash and the salt to store."""
+        salt = "".join([str(random.randint(0, 9)) for _ in range(6)])
+        hash = password + salt
+
+        return (salt, hash)
+
+    def comparePasswords(self, givenPass: str, actualPass: str, salt: str) -> bool:
+        """Compare passwords."""
+        return givenPass + salt == actualPass
 
     def generate_otp(self, email: str) -> OTP:
         """Generate a OTP instance."""
@@ -94,75 +114,85 @@ class Router:
             200,
         )
 
-    def checkhealth(self):
+    def checkhealth(self, status: str):
         """Route to handle health request."""
-        return {"status": "OK"}
+        return {"status": "OK", "version": status}
 
-    def signup(self, user: User) -> Tuple[dict[str, Any], int]:
+    def signup(self, auth: Auth) -> AuthResponse | ErrorResponse:
         """Route to handle user signup."""
+        (salt, hash_password) = self.generate_hash(auth.password)
+
+        auth.password = hash_password
+        auth.salt = salt
+
+        user = User(
+            auth=auth,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+            profile_completed=False,
+            profile=None,
+        )
+
         (id, errmsg, status_code) = self.db.add_user(user)
 
         if id == "":
-            return (
-                {
-                    "isSuccess": False,
-                    "error": errmsg,
-                },
-                int(status_code),
+            return ErrorResponse(
+                status=status_code,
+                success=False,
+                errmsg=errmsg,
             )
 
-        user_json = user.dict(exclude={"password"}, exclude_none=True)
-        user_json["_id"] = str(id)
+        user.auth.password = ""
+        user.auth.salt = None
 
-        return (
-            {
-                "isSuccess": True,
-                "error": None,
-                "payload": user_json,
-            },
-            200,
+        return AuthResponse(
+            status=200, success=True, error=None, payload=user, token=None, refresh=None
         )
 
-    def login(self, user: User) -> Tuple[dict[str, Any], int]:
+    def login(self, auth: Auth) -> AuthResponse | ErrorResponse:
         """Route to handle user signin."""
-        result = self.db.search_user(user)
+        user = self.db.search_user(auth)
 
-        if result == None:
-            return (
-                {
-                    "isSuccess": False,
-                    "error": "User not found",
-                },
-                http.HTTPStatus.NOT_FOUND,
+        if user == None:
+            return ErrorResponse(
+                success=False, errmsg="User not found", status=HTTPStatus.NOT_FOUND
             )
 
-        if result["password"] != user.password:
-            return (
-                {
-                    "isSuccess": False,
-                    "error": "email/password wrong.",
-                },
-                http.HTTPStatus.BAD_REQUEST,
+        if not self.comparePasswords(
+            givenPass=auth.password,
+            actualPass=user.auth.password,
+            salt=user.auth.salt if user.auth.salt else "",
+        ):
+            return ErrorResponse(
+                status=400, errmsg="email/password wrong", success=False
             )
 
         (token, refresh) = self.generateToken(user)
 
-        return (
-            {
-                "isSuccess": True,
-                "error": None,
-                "payload": user.dict(),
-                "token": token,
-                "refresh": refresh,
-            },
-            http.HTTPStatus.OK,
+        if token == "":
+            return ErrorResponse(
+                status=HTTPStatus.INTERNAL_SERVER_ERROR,
+                success=False,
+                errmsg="Can't generate token. SECRET_KEY empty.",
+            )
+
+        user.auth.password = ""
+        user.auth.salt = ""
+
+        return AuthResponse(
+            status=HTTPStatus.OK,
+            success=True,
+            error=None,
+            payload=user,
+            token=token,
+            refresh=refresh,
         )
 
     def generateToken(self, user: User) -> Tuple[str, str]:
         """Generate a pair of JWT Token."""
-        payload = user.dict(exclude={"password"}, exclude_none=True)
+        payload = jsonable_encoder(user, exclude={"auth": {"password", "salt"}})
 
-        payload["exp"] = datetime.now() + timedelta(days=1)
+        payload["exp"] = str(datetime.now() + timedelta(days=1))
 
         key = ""
         if "SECRET_KEY" in self.config:
@@ -172,7 +202,7 @@ class Router:
 
         token = jwt.encode(payload=payload, key=key, algorithm="HS256")
 
-        payload["exp"] = datetime.now() + timedelta(days=7)
+        payload["exp"] = str(datetime.now() + timedelta(days=7))
 
         refresh = jwt.encode(payload=payload, key=key, algorithm="HS256")
 
