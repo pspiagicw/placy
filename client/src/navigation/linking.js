@@ -10,7 +10,7 @@ const config = {
             path: "verify"
         },
         Home: {
-            path: "home"
+            path: ""
         },
         Announcement: {
             path: "announcements"
