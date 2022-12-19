@@ -1,7 +1,7 @@
 """Module to route all backend requests."""
 
-from backend.database import DatabaseService
-from backend.models import OTP, Email, User, UpdatePassword
+from placy.database import DatabaseService
+from placy.models import OTP, Email, User, UpdatePassword
 from typing import Any, Tuple
 import http
 import random

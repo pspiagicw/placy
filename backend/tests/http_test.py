@@ -4,12 +4,12 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from dotenv import dotenv_values
-from backend.database import MongoService
-from backend.routes import Router
-from backend.logging import DefaultLogger
+from placy.database import MongoService
+from placy.routes import Router
+from placy.logging import DefaultLogger
 from faker import Faker
 
-from backend.placy import Placy
+from placy.placy import Placy
 
 app = FastAPI()
 # Testing config
