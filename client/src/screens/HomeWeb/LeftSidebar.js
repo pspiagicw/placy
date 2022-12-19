@@ -57,7 +57,6 @@ const LeftSidebar = () => {
     <View style={{ backgroundColor: "red", height: '100%' }}>
       <View>
       <Tab name="Placy" icon={<MaterialCommunityIcons name="book-education" size={24} color="black" />} />
-      
         <Tab name="Announcements" icon={<Entypo name="megaphone" size={24} color="black" />} />
         <Tab name="Mailbox" icon={<Entypo name="mail" size={24} color="black" />} />
         <Tab name="Internship" icon={<MaterialIcons name="work" size={24} color="black" />} />
