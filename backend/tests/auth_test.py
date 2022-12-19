@@ -1,13 +1,12 @@
 """Module to provide simple http test."""
 
+from dotenv import dotenv_values
+from faker import Faker
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-
-from dotenv import dotenv_values
-from placy.database import MongoService
-from placy.routes import Router
-from placy.logging import DefaultLogger
-from faker import Faker
+from placy.controllers.auth import AuthController
+from placy.services.database import MongoService
+from placy.services.logging import DefaultLogger
 
 from placy.placy import Placy
 
@@ -18,14 +17,14 @@ config = {
     "MONGO_URI": "mongodb://localhost:27017",
 }
 database = MongoService()
-router = Router(database, config)
+authController = AuthController(database, config)
 logger = DefaultLogger()
 placy = Placy(
     app=app,
     databaseService=database,
     loggingService=logger,
     config=config,
-    router=router,
+    authController=authController,
 )
 placy.setup()
 placy.routes()
@@ -34,14 +33,14 @@ client = TestClient(app)
 
 def assertSignUp(user: dict[str, str]):
     """Assert signup is working and possible."""
-    response = client.post("/signup", json=user)
+    response = client.post("/auth/signup", json=user)
     assert response.status_code == 200, "Status code not 200."
     assert response.json()["success"], "Request not a success."
 
 
 def assertLogin(user: dict[str, str]) -> str:
     """Assert login is working and possible."""
-    response = client.post("/login", json=user)
+    response = client.post("/auth/login", json=user)
     assert response.status_code == 200, "Status code not 200."
 
     json_response = response.json()
@@ -81,7 +80,7 @@ def test_wrong_password():
     # Make a wrong password
     user["password"] = "wrongpassword"
 
-    response = client.post("/login", json=user)
+    response = client.post("/auth/login", json=user)
     assert response.status_code == 400, "Status code not 400."
     json_response = response.json()
     assert not json_response["success"], json_response["errmsg"]
@@ -97,7 +96,7 @@ def test_token_refresh():
     token = assertLogin(user)
 
     response = client.get(
-        "/refresh",
+        "/auth/refresh",
         headers={"Authorization": f"Bearer {token}"},
     )
 

@@ -1,26 +1,24 @@
-"""Module to route all backend requests."""
+"""Module has controllers for Authentication."""
 
-from pydantic import EmailStr
-from placy.database import DatabaseService
+import random
+from datetime import datetime, timedelta
+from http import HTTPStatus
+from typing import Tuple
+
+import jwt
 from fastapi.encoders import jsonable_encoder
-from placy.models import (
-    OTP,
-    Health,
-    User,
-    UpdatePassword,
-    Auth,
-    ErrorResponse,
+from placy.models.auth import OTP, Auth, UpdatePassword, User
+from placy.models.response import (
     AuthResponse,
+    ErrorResponse,
+    Health,
     JWTRefreshResponse,
 )
-from typing import Any, Tuple
-from http import HTTPStatus
-import random
-import jwt
-from datetime import datetime, timedelta
+from placy.services.database import DatabaseService
+from pydantic import EmailStr
 
 
-class Router:
+class AuthController:
     """Router handles all routing."""
 
     def __init__(self, db: DatabaseService, config: dict[str, str]):
@@ -50,7 +48,6 @@ class Router:
 
     def reset(self, update: UpdatePassword) -> ErrorResponse:
         """Route to handle reset password requests."""
-        # return ({"isSuccess": False, "error": "Not implemented yet."}, 500)
         return ErrorResponse(
             status=HTTPStatus.NOT_IMPLEMENTED,
             errmsg="Not implemented yet.",

@@ -1,32 +1,9 @@
-"""Module to contain models for back API."""
+"""Module contains models for authentication."""
 
-from enum import Enum
-from pydantic import BaseModel, EmailStr, Field
 import datetime
+from enum import Enum
 
-
-class JWTRefreshResponse(BaseModel):
-    """Model for JWT Refresh request."""
-
-    status: int
-    success: bool
-    token: str
-    refresh: str
-
-
-class Health(BaseModel):
-    """Model for health info."""
-
-    status: str
-    version: float
-
-
-class ErrorResponse(BaseModel):
-    """Model for containing response."""
-
-    status: int
-    success: bool
-    errmsg: str
+from pydantic import BaseModel, EmailStr, Field
 
 
 class RoleEnum(str, Enum):
@@ -85,14 +62,3 @@ class User(BaseModel):
     profile_completed: bool
 
     profile: Profile | None
-
-
-class AuthResponse(BaseModel):
-    """Model for responding auth requests."""
-
-    status: int
-    success: bool
-    error: str | None
-    payload: User
-    token: str | None
-    refresh: str | None

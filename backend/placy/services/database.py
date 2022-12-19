@@ -1,10 +1,11 @@
 """Module for database services."""
 
 
-from placy.models import User, OTP, Auth
-from typing import Tuple, Any
-from pymongo import MongoClient
 import http
+from typing import Any, Tuple
+
+from placy.models.auth import OTP, Auth, User
+from pymongo import MongoClient
 
 
 class DatabaseService:
