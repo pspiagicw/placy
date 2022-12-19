@@ -11,12 +11,9 @@ import { Entypo, Ionicons } from "@expo/vector-icons";
 import Auth from "../screens/Auth"
 import useAuthService from "../hooks/api/authService";
 import linking from "./linking";
-import CustomDrawer from "./Drawer";
-import colors from "../theme/colors";
-import Discover from "../screens/Discover";
 import ForgotPassword from "../screens/Auth/ForgotPassword";
 import VerifyPassword from "../screens/Auth/VerifyPassword";
-import HomeWebStack from "../screens/HomeWeb/HomeWebStack";
+import Home from "../screens/HomeWeb";
 
 
 const Routes = () => {
@@ -24,8 +21,7 @@ const Routes = () => {
     const isLoading = useSelector(state => state.auth.isLoading);
     const isSignedIn = useSelector(state => state.auth.isLoggedIn);
     const AuthStack = createNativeStackNavigator();
-    const Tab = createBottomTabNavigator();
-    const Drawer = createDrawerNavigator();
+    const HomeStack = createNativeStackNavigator();
 
     const authService = useAuthService()
 
@@ -43,6 +39,12 @@ const Routes = () => {
         </AuthStack.Navigator>
     )
 
+    const HomeWebStackScreens = () => (
+        <HomeStack.Navigator screenOptions={{ headerShown: false }}>
+            <HomeStack.Screen name="Home" component={Home} />
+        </HomeStack.Navigator>
+    )
+
     return (
         <SafeAreaProvider>
             <NavigationContainer linking={linking}>
@@ -54,7 +56,7 @@ const Routes = () => {
                         </View>
                     }
                     {!isLoading && !isSignedIn && <AuthStackScreens />}
-                    {!isLoading && isSignedIn && <HomeWebStack />}
+                    {!isLoading && isSignedIn && <HomeWebStackScreens />}
                 </View>
             </NavigationContainer>
         </SafeAreaProvider>
