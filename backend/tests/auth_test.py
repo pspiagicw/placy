@@ -32,81 +32,81 @@ placy.routes()
 client = TestClient(app)
 
 
+def assertSignUp(user: dict[str, str]):
+    """Assert signup is working and possible."""
+    response = client.post("/signup", json=user)
+    assert response.status_code == 200, "Status code not 200."
+    assert response.json()["success"], "Request not a success."
+
+
+def assertLogin(user: dict[str, str]) -> str:
+    """Assert login is working and possible."""
+    response = client.post("/login", json=user)
+    assert response.status_code == 200, "Status code not 200."
+
+    json_response = response.json()
+
+    assert json_response["success"], "Request not a success."
+    assert json_response["token"], "Token empty"
+    assert json_response["refresh"], "Refresh Token empty."
+    return json_response["token"]
+
+
 def test_health():
     """Simple function for testing health of API."""
     response = client.get("/health")
     assert response.status_code == 200, "Status code not 200"
-    assert response.json() == {"status": "OK"}
+    assert response.json() == {"status": "OK", "version": 0.1}
 
 
 def test_signup():
     """Test user signup functionality."""
-    user_payload = generate_user()
-
-    response = client.post("/signup", json=user_payload)
-    assert response.status_code == 200, "Status code not 200."
-    assert response.json()["isSuccess"], "Request not a success."
+    user = generate_user()
+    assertSignUp(user)
 
 
 def test_login():
     """Test user login functionality."""
-    user_payload = generate_user()
-
-    response = client.post("/signup", json=user_payload)
-    assert response.status_code == 200, "Status code not 200."
-    assert response.json()["isSuccess"], "Request not a success."
-
-    response = client.post("/login", json=user_payload)
-    assert response.status_code == 200, "Status code not 200."
-    json_response = response.json()
-    assert json_response["isSuccess"], "Request not a success."
-    assert json_response["token"], "Token empty"
+    user = generate_user()
+    assertSignUp(user)
+    assertLogin(user)
 
 
 def test_wrong_password():
     """Test user with wrong password."""
-    user_payload = generate_user()
+    user = generate_user()
+    assertSignUp(user)
+    assertLogin(user)
 
-    response = client.post("/signup", json=user_payload)
-    assert response.status_code == 200, "Status code not 200."
-    assert response.json()["isSuccess"], "Request not a success."
+    # Make a wrong password
+    user["password"] = "wrongpassword"
 
-    # Make a wrong
-    user_payload["password"] = "wrongpassword"
-
-    response = client.post("/login", json=user_payload)
+    response = client.post("/login", json=user)
     assert response.status_code == 400, "Status code not 400."
     json_response = response.json()
-    assert not json_response["isSuccess"], json_response["error"]
+    assert not json_response["success"], json_response["errmsg"]
     assert "token" not in json_response, "Token present"
 
 
 def test_token_refresh():
     """Test token refresh endpoint."""
-    user_payload = generate_user()
+    user = generate_user()
 
-    response = client.post("/signup", json=user_payload)
-    assert response.status_code == 200, "Status code not 200."
-    assert response.json()["isSuccess"], "Request not a success."
+    assertSignUp(user)
 
-    response = client.post("/login", json=user_payload)
-    assert response.status_code == 200, "Status code not 200."
-
-    json_response = response.json()
-
-    assert json_response["isSuccess"], "Request not a success."
-    assert json_response["token"], "Token empty"
+    token = assertLogin(user)
 
     response = client.get(
         "/refresh",
-        headers={"Authorization": f"Bearer {json_response['token']}"},
+        headers={"Authorization": f"Bearer {token}"},
     )
 
     json_response = response.json()
 
-    assert json_response["isSuccess"], json_response["error"]
+    assert json_response["success"], json_response["errmsg"]
     assert response.status_code == 200, "Response not a success"
     assert json_response["token"], "Token empty"
+    assert json_response["refresh"], "Refresh token empty"
 
 
 def generate_user() -> dict[str, str]:

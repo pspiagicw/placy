@@ -34,6 +34,11 @@ class DatabaseService:
         print(otp)
         return ("", "", 0)
 
+    def search_otp(self, email: str) -> OTP | None:
+        """Search for a OTP in the database."""
+        print(otp)
+        return None
+
 
 class MongoService(DatabaseService):
     """Implemented subclass to manage connection with MongoDB."""

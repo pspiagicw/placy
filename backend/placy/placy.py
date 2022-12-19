@@ -3,12 +3,14 @@
 from fastapi import FastAPI
 from fastapi import Header
 from fastapi.responses import JSONResponse
+from pydantic import EmailStr
 import uvicorn
 from placy import routes
 from placy.database import DatabaseService
 from placy.models import (
+    Health,
+    JWTRefreshResponse,
     UpdatePassword,
-    Email,
     Auth,
     AuthResponse,
     ErrorResponse,
@@ -43,7 +45,11 @@ class Placy:
     def routes(self) -> None:
         """Route all requests."""
 
-        @self.app.get("/health", response_description="Check the health of the server.")
+        @self.app.get(
+            "/health",
+            response_model=Health,
+            response_description="Check the health of the server.",
+        )
         def health():
             response = self.router.checkhealth(self.app.version)
             return response
@@ -52,6 +58,7 @@ class Placy:
             "/signup",
             response_model=AuthResponse | ErrorResponse,
             response_model_exclude_none=True,
+            response_description="Allowr user signup.",
         )
         def signup(auth: Auth, temp: Response):
             response = self.router.signup(auth)
@@ -62,21 +69,32 @@ class Placy:
             "/login",
             response_model=AuthResponse | ErrorResponse,
             response_model_exclude_none=True,
+            response_description="Allows user logins.",
         )
         def login(auth: Auth, temp: Response):
             response = self.router.login(auth)
             temp.status_code = response.status
             return response
 
-        @self.app.get("/refresh")
-        def refresh(authorization: str | None = Header(default=None)):
-            (response, status_code) = self.router.refresh(authorization)
-            return JSONResponse(status_code=status_code, content=response)
+        @self.app.get(
+            "/refresh",
+            response_model=JWTRefreshResponse | ErrorResponse,
+            response_description="Allows refreshing JWT token.",
+        )
+        def refresh(temp: Response, authorization: str | None = Header(default=None)):
+            response = self.router.refresh(authorization)
+            temp.status_code = response.status
+            return response
 
-        @self.app.post("/forgot")
-        def forgot(email: Email):
-            (response, status_code) = self.router.forgot(email)
-            return JSONResponse(status_code=status_code, content=response)
+        @self.app.post(
+            "/forgot",
+            response_model=ErrorResponse,
+            response_description="Allows user to request forgot password.",
+        )
+        def forgot(email: EmailStr, temp: Response):
+            response = self.router.forgot(email)
+            temp.status_code = response.status
+            return response
 
         @self.app.post("/reset")
         def reset(update: UpdatePassword):

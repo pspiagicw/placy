@@ -1,15 +1,17 @@
 """Module to route all backend requests."""
 
+from pydantic import EmailStr
 from placy.database import DatabaseService
 from fastapi.encoders import jsonable_encoder
 from placy.models import (
     OTP,
-    Email,
+    Health,
     User,
     UpdatePassword,
     Auth,
     ErrorResponse,
     AuthResponse,
+    JWTRefreshResponse,
 )
 from typing import Any, Tuple
 from http import HTTPStatus
@@ -43,45 +45,36 @@ class Router:
 
         exp = datetime.now() + timedelta(minutes=15)
 
-        instance = OTP(email=email, otp=otp, exp=exp, used=False)
+        instance = OTP(email=EmailStr(email), otp=otp, exp=exp, used=False)
         return instance
 
-    def reset(self, update: UpdatePassword) -> Tuple[dict[str, Any], int]:
+    def reset(self, update: UpdatePassword) -> ErrorResponse:
         """Route to handle reset password requests."""
-        return ({"isSuccess": False, "error": "Not implemented yet."}, 500)
+        # return ({"isSuccess": False, "error": "Not implemented yet."}, 500)
+        return ErrorResponse(
+            status=HTTPStatus.NOT_IMPLEMENTED,
+            errmsg="Not implemented yet.",
+            success=False,
+        )
 
-    def forgot(self, email: Email) -> Tuple[dict[str, Any], int]:
+    def forgot(self, email: EmailStr) -> ErrorResponse:
         """Route to handle forgot password requests."""
-        otp = self.generate_otp(email.email)
+        otp = self.generate_otp(email)
 
         (id, errmsg, status_code) = self.db.add_otp(otp)
 
         if id == "":
-            return (
-                {
-                    "isSuccess": False,
-                    "error": errmsg,
-                },
-                status_code,
-            )
+            return ErrorResponse(success=False, errmsg=errmsg, status=status_code)
 
-        return (
-            {
-                "isSuccess": True,
-                "error": None,
-            },
-            200,
-        )
+        return ErrorResponse(success=True, errmsg="null", status=HTTPStatus.OK)
 
-    def refresh(self, token_header: str | None) -> Tuple[dict[str, Any], int]:
+    def refresh(self, token_header: str | None) -> ErrorResponse | JWTRefreshResponse:
         """Route to handle JWT Token refresh."""
         if token_header == None:
-            return (
-                {
-                    "isSuccess": False,
-                    "error": "No authorization header",
-                },
-                401,
+            return ErrorResponse(
+                status=HTTPStatus.UNAUTHORIZED,
+                success=False,
+                errmsg="No authorization header.",
             )
 
         token = token_header.split()[1]
@@ -91,32 +84,37 @@ class Router:
         try:
             decoded = jwt.decode(token, self.config["SECRET_KEY"], algorithms=["HS256"])
         except jwt.ExpiredSignatureError:
-            return ({"isSuccess": False, "error": "JWT token has expired"}, 401)
+            return ErrorResponse(
+                success=False,
+                errmsg="JWT token has expired",
+                status=HTTPStatus.UNAUTHORIZED,
+            )
+
         except Exception as e:
-            return ({"isSuccess": False, "error": str(e)}, 500)
+            return ErrorResponse(
+                success=False, errmsg=str(e), status=HTTPStatus.INTERNAL_SERVER_ERROR
+            )
 
         if decoded == None:
-            return ({"isSuccess": False, "error": "Error parsing JWT token."}, 500)
+            return ErrorResponse(
+                success=False,
+                errmsg="Error parsing JWT token.",
+                status=HTTPStatus.INTERNAL_SERVER_ERROR,
+            )
 
         # Required for converting to object.
-        decoded["password"] = ""
+        decoded["auth"]["password"] = ""
         user = User.parse_obj(decoded)
 
         (new_token, refresh_token) = self.generateToken(user)
 
-        return (
-            {
-                "isSuccess": True,
-                "error": None,
-                "token": new_token,
-                "refresh": refresh_token,
-            },
-            200,
+        return JWTRefreshResponse(
+            status=HTTPStatus.OK, success=True, token=new_token, refresh=refresh_token
         )
 
     def checkhealth(self, status: str):
         """Route to handle health request."""
-        return {"status": "OK", "version": status}
+        return Health(status="OK", version=0.1)
 
     def signup(self, auth: Auth) -> AuthResponse | ErrorResponse:
         """Route to handle user signup."""
@@ -192,7 +190,7 @@ class Router:
         """Generate a pair of JWT Token."""
         payload = jsonable_encoder(user, exclude={"auth": {"password", "salt"}})
 
-        payload["exp"] = str(datetime.now() + timedelta(days=1))
+        payload["exp"] = datetime.now() + timedelta(days=1)
 
         key = ""
         if "SECRET_KEY" in self.config:
@@ -202,7 +200,7 @@ class Router:
 
         token = jwt.encode(payload=payload, key=key, algorithm="HS256")
 
-        payload["exp"] = str(datetime.now() + timedelta(days=7))
+        payload["exp"] = datetime.now() + timedelta(days=7)
 
         refresh = jwt.encode(payload=payload, key=key, algorithm="HS256")
 

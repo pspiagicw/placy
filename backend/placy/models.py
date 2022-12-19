@@ -3,7 +3,22 @@
 from enum import Enum
 from pydantic import BaseModel, EmailStr, Field
 import datetime
-from bson import ObjectId
+
+
+class JWTRefreshResponse(BaseModel):
+    """Model for JWT Refresh request."""
+
+    status: int
+    success: bool
+    token: str
+    refresh: str
+
+
+class Health(BaseModel):
+    """Model for health info."""
+
+    status: str
+    version: float
 
 
 class ErrorResponse(BaseModel):
@@ -12,12 +27,6 @@ class ErrorResponse(BaseModel):
     status: int
     success: bool
     errmsg: str
-
-
-class Email(BaseModel):
-    """Model for containing email."""
-
-    email: EmailStr
 
 
 class RoleEnum(str, Enum):
