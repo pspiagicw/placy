@@ -3,8 +3,20 @@ const config = {
         Auth: {
             path: "auth"
         },
+        Forgot: {
+            path: "forgot"
+        },
+        Verification: {
+            path: "verify"
+        },
         Home: {
             path: "home"
+        },
+        Announcement: {
+            path: "announcements"
+        },
+        Settings: {
+            path: "settings"
         }
     }
 }

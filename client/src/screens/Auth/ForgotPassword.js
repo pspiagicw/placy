@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Text, TextInput, TouchableOpacity, View } from 'react-native'
 import React, { useState } from 'react'
 import colors from '../../theme/colors'
 import useAuthService from '../../hooks/api/authService'
@@ -25,6 +25,7 @@ const ForgotPassword = ({ navigation }) => {
                     autoCapitalize="none"
                     value={email}
                     onChangeText={t => setEmail(t)}
+                    onSubmitEditing={forgot}
                 />
                 <TouchableOpacity style={{ width: '100%' }} onPress={() => { navigation.navigate("Auth", { signIn: true, register: false }) }}>
                     <Text style={sharedStyles.actionText}>Back to sign in</Text>

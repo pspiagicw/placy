@@ -1,5 +1,5 @@
-import { Pressable, StyleSheet, Text, TextInput, ToastAndroid, TouchableOpacity, View } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import { Text, TextInput, ToastAndroid, TouchableOpacity, View } from 'react-native'
+import React, { useEffect, useRef, useState } from 'react'
 import sharedStyles from './sharedStyles'
 import colors from '../../theme/colors'
 import OtpInput from '../../components/OtpInput'
@@ -20,6 +20,12 @@ const VerifyPassword = ({ navigation, route }) => {
     if (route.params && route.params['email']) { setEmail(route.params['email']); }
   }, [])
 
+  const passwordRef = useRef(null)
+
+  useEffect(() => {
+    if (isPinReady) passwordRef.current.focus()
+  }, [isPinReady])
+
   const reset = async () => {
     authService.reset(email, otpCode, password)
   }
@@ -37,6 +43,7 @@ const VerifyPassword = ({ navigation, route }) => {
         </View>
         <Text style={{ ...sharedStyles.titleText, marginBottom: 5 }}>New Password</Text>
         <TextInput style={sharedStyles.input}
+          ref={passwordRef}
           placeholder="Password"
           secureTextEntry
           autoCapitalize="none"
@@ -44,6 +51,7 @@ const VerifyPassword = ({ navigation, route }) => {
           textContentType="password"
           value={password}
           onChangeText={(text) => setPassword(text)}
+          onSubmitEditing={reset}
         />
         <Text style={sharedStyles.actionText}>
           If you didn't receive a code,
@@ -64,5 +72,3 @@ const VerifyPassword = ({ navigation, route }) => {
 }
 
 export default VerifyPassword
-
-const styles = StyleSheet.create({})
