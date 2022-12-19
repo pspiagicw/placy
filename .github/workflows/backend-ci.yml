@@ -20,7 +20,7 @@ jobs:
           poe init
       - name: Ensure Formatted
         run: |
-          poetry run black --check backend tests
+          poetry run black --check placy tests
       - name: Setup local MongoDB
         uses: supercharge/mongodb-github-action@1.8.0
       - name: Ensure documentation
