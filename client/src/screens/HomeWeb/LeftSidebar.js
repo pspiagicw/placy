@@ -2,6 +2,7 @@ import React from 'react'
 import { Image, StyleSheet, Text, TouchableOpacity, View, ScrollView, FlatList, Dimensions } from 'react-native'
 import { Entypo, Ionicons } from '@expo/vector-icons'
 import colors from '../../theme/colors'
+import Scrollbars from 'react-custom-scrollbars'
 
 const Tab = ({ name, icon, onPress = () => { }, styles }) => {
   return <TouchableOpacity onPress={onPress} activeOpacity={0.7} style={{ backgroundColor: 'yellow', height: 50, marginVertical: 10, alignItems: 'center', flexDirection: 'row', ...styles }}>
@@ -34,19 +35,20 @@ const CommunityContainer = () => {
         <Ionicons name="settings" size={24} color='black' />
         <Text style={{ marginLeft: 10 }}>Communities</Text>
       </View>
-      <FlatList
-        // style={{ height: '100%' }}
-        data={communities}
-        renderItem={({ item }) =>
-          <Tab
-            key={item.id}
-            name={item.name}
-            onPress={item.onPress}
-            styles={{ marginLeft: 10, marginVertical: 0, marginTop: 10, }}
-            icon={<Image source={{ uri: item.image }} style={{ height: 24, width: 24, }} />}
-          />}
-        keyExtractor={item => item.id}
-      />
+      <Scrollbars>
+        <FlatList
+          data={communities}
+          renderItem={({ item }) =>
+            <Tab
+              key={item.id}
+              name={item.name}
+              onPress={item.onPress}
+              styles={{ marginLeft: 10, marginVertical: 0, marginTop: 10, }}
+              icon={<Image source={{ uri: item.image }} style={{ height: 24, width: 24, }} />}
+            />}
+          keyExtractor={item => item.id}
+        />
+      </Scrollbars>
     </View>)
 }
 
