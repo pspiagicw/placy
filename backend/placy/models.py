@@ -5,6 +5,29 @@ from pydantic import BaseModel, validator
 import datetime
 
 
+class Email(BaseModel):
+    """Model for the email."""
+
+    email: str
+
+
+class UpdatePassword(BaseModel):
+    """Model for updated password."""
+
+    email: str
+    otp: str
+    new_password: str
+
+
+class OTP(BaseModel):
+    """Model to store OTP system."""
+
+    email: str
+    otp: str
+    exp: datetime.datetime
+    used: bool
+
+
 class User(BaseModel):
     """Model for the user."""
 

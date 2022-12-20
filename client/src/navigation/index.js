@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native/"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -16,6 +16,7 @@ import colors from "../theme/colors";
 import Discover from "../screens/Discover";
 import ForgotPassword from "../screens/Auth/ForgotPassword";
 import VerifyPassword from "../screens/Auth/VerifyPassword";
+import Community from "../screens/Community";
 
 
 const Routes = () => {
@@ -42,39 +43,52 @@ const Routes = () => {
         </AuthStack.Navigator>
     )
 
-    const HomeStack = () => (
-        <Drawer.Navigator drawerContent={props => {
+    const HomeMobileStack = () => {
+        return <Drawer.Navigator drawerContent={props => {
             const filteredProps = { ...props, state: { ...props.state, routeNames: props.state.routeNames.filter((routeName) => { routeName !== 'Discover' }), routes: props.state.routes.filter((route) => route.name !== "Discover") } }
             return <CustomDrawer {...filteredProps} />
         }}>
             <Drawer.Screen name="Discover" component={Discover} />
+            <Drawer.Screen name="Community" component={Community} />
         </Drawer.Navigator>
-    )
+    }
 
     const Screen = () => <View><Text>index</Text></View>
 
     const TabScreens = () => (
-        <Tab.Navigator screenOptions={({ route }) => ({
-            tabBarIcon: ({ focused }) => {
-                let icon;
-                if (route.name === "Home") {
-                    icon = <Entypo name="home" size={24} color={focused ? colors.primary : colors.secondary} />
-                }
-                else if (route.name === "Announcement") {
-                    icon = <Entypo name="megaphone" size={24} color={focused ? colors.primary : colors.secondary} />
-                }
-                else if (route.name === "Settings") {
-                    icon = <Ionicons name="settings" size={24} color={focused ? colors.primary : colors.secondary} />
-                }
-                return icon;
-            }
-        })}
+        <Tab.Navigator screenOptions={{
+            tabBarStyle: {
+                position: 'absolute',
+                bottom: 20,
+                left: 20,
+                right: 20,
+                borderRadius: 15,
+                height: 50,
+                ...styles.shadow
+            },
+            tabBarActiveTintColor: colors.primary,
+            tabBarInactiveTintColor: colors.secondary
+        }}
         >
-            <Tab.Screen name="Home" component={HomeStack} options={{ headerShown: false }} />
-            <Tab.Screen name="Announcement" component={Screen} />
-            <Tab.Screen name="Settings" component={Screen} />
+            <Tab.Screen name="Home" component={HomeMobileStack}
+                options={{
+                    headerShown: false,
+                    tabBarIcon: ({ focused }) => <Entypo name="home" size={24} color={focused ? colors.primary : colors.secondary} />
+                }}
+            />
+            <Tab.Screen name="Announcement" component={Screen}
+                options={{
+                    title: 'Announcements', tabBarIcon: ({ focused }) =>
+                        <Entypo name="megaphone" size={30} color={focused ? colors.primary : colors.secondary} />,
+                }} />
+            <Tab.Screen name="Settings" component={Screen}
+                options={{
+                    tabBarIcon: ({ focused }) =>
+                        <Ionicons name="settings" size={24} color={focused ? colors.primary : colors.secondary} />,
+                }} />
         </Tab.Navigator>
     )
+
 
     return (
         <SafeAreaProvider>
@@ -94,4 +108,16 @@ const Routes = () => {
     )
 }
 
+const styles = StyleSheet.create({
+    shadow: {
+        shadowColor: colors.secondary,
+        shadowOffset: {
+            width: 0,
+            height: 1,
+        },
+        shadowOpacity: 0.18,
+        shadowRadius: 1.00,
+        elevation: 1,
+    }
+})
 export default Routes

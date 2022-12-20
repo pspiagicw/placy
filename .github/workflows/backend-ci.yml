@@ -1,12 +1,13 @@
 name: Continous Integration
 on:
-  push:
   pull_request:
 
 jobs:
-  build:
+  backend:
     runs-on: ubuntu-latest
-
+    defaults:
+      run:
+        working-directory: ./backend
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python
@@ -19,7 +20,7 @@ jobs:
           poe init
       - name: Ensure Formatted
         run: |
-          poetry run black --check backend tests
+          poetry run black --check placy tests
       - name: Setup local MongoDB
         uses: supercharge/mongodb-github-action@1.8.0
       - name: Ensure documentation

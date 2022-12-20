@@ -36,6 +36,7 @@ const useAuthService = () => {
     }
 
     const reset = async (email, otp, password) => {
+        alert("Reset")
 
     }
 
