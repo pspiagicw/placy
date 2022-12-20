@@ -16,6 +16,7 @@ from placy.models.response import (
     JWTRefreshResponse,
 )
 from placy.services.database import DatabaseService
+from placy.services.email import EmailService
 from pydantic import EmailStr
 
 TokenResponse = namedtuple("TokenResponse", ["user", "error"])
@@ -24,10 +25,13 @@ TokenResponse = namedtuple("TokenResponse", ["user", "error"])
 class AuthController:
     """Router handles all routing."""
 
-    def __init__(self, db: DatabaseService, config: dict[str, str]):
+    def __init__(
+        self, db: DatabaseService, config: dict[str, str], email: EmailService
+    ):
         """Construct the Router class."""
         self.db = db
         self.config = config
+        self.email = email
 
     def generate_hash(self, password: str) -> Tuple[str, str]:
         """Generate a hash and the salt to store."""
@@ -51,11 +55,39 @@ class AuthController:
 
     def reset(self, update: UpdatePassword) -> ErrorResponse:
         """Route to handle reset password requests."""
-        return ErrorResponse(
-            status=HTTPStatus.NOT_IMPLEMENTED,
-            errmsg="Not implemented yet.",
-            success=False,
+        otp = self.db.search_otp(update)
+
+        if otp == None:
+            return ErrorResponse(
+                status=HTTPStatus.BAD_REQUEST, success=False, errmsg="OTP not found."
+            )
+
+        now = datetime.now()
+
+        if otp.exp < now:
+            return ErrorResponse(
+                status=HTTPStatus.BAD_REQUEST, success=False, errmsg="OTP has expired."
+            )
+
+        result = self.db.delete_otp(update)
+
+        if result.status != HTTPStatus.OK:
+            return ErrorResponse(
+                status=result.status, success=False, errmsg=result.errmsg
+            )
+
+        (salt, hash) = self.generate_hash(update.new_password)
+
+        result = self.db.update_user_password(
+            email=update.email, password=hash, salt=salt
         )
+
+        if result.status != HTTPStatus.OK:
+            return ErrorResponse(
+                status=result.status, errmsg=result.errmsg, success=False
+            )
+
+        return ErrorResponse(status=result.status, errmsg="", success=True)
 
     def forgot(self, email: EmailStr) -> ErrorResponse:
         """Route to handle forgot password requests."""
@@ -65,6 +97,8 @@ class AuthController:
 
         if id == "":
             return ErrorResponse(success=False, errmsg=errmsg, status=status_code)
+
+        self.email.send_email(email, otp.otp)
 
         return ErrorResponse(success=True, errmsg="null", status=HTTPStatus.OK)
 

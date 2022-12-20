@@ -4,6 +4,7 @@ from dotenv import dotenv_values
 from fastapi import FastAPI
 from placy.controllers.auth import AuthController
 from placy.services.database import MongoService
+from placy.services.email import EmailService
 from placy.services.logging import DefaultLogger
 
 from placy.placy import Placy
@@ -12,7 +13,8 @@ if __name__ == "__main__":
     app = FastAPI()
     config = dotenv_values()
     database = MongoService()
-    router = AuthController(database, config)
+    email = EmailService(config)
+    router = AuthController(database, config, email=email)
     logger = DefaultLogger()
     placy = Placy(
         app=app,
@@ -20,6 +22,7 @@ if __name__ == "__main__":
         loggingService=logger,
         config=config,
         authController=router,
+        emailService=email,
     )
     placy.setup()
     placy.routes()

@@ -9,9 +9,24 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from placy.controllers.auth import AuthController
 from placy.services.database import MongoService
+from placy.services.email import EmailService
 from placy.services.logging import DefaultLogger
 
 from placy.placy import Placy
+
+
+class MockEmailService(EmailService):
+    """Mock sending emails."""
+
+    def __init__(self, config: dict[str, str]):
+        """Construct the Mock Emailer."""
+        super().__init__(config)
+        self.cache = dict()
+
+    def send_email(self, email: str, otp: str):
+        """Send a fake email."""
+        self.cache[email] = otp
+
 
 app = FastAPI()
 # Testing config
@@ -20,7 +35,8 @@ config = {
     "MONGO_URI": "mongodb://localhost:27017",
 }
 database = MongoService()
-authController = AuthController(database, config)
+email = MockEmailService(config)
+authController = AuthController(database, config, email)
 logger = DefaultLogger()
 placy = Placy(
     app=app,
@@ -28,6 +44,7 @@ placy = Placy(
     loggingService=logger,
     config=config,
     authController=authController,
+    emailService=email,
 )
 placy.setup()
 placy.routes()
@@ -129,6 +146,30 @@ def test_wrong_token_refresh():
     assert not json_response["success"], "Token was parsed."
     assert "token" not in json_response, "Token present."
     assert "refresh" not in json_response, "Refresh token present."
+
+
+def test_reset_password():
+    """Test the forgot/reset password flow."""
+    user = generate_user()
+
+    assertSignUp(user)
+
+    _ = assertLogin(user)
+
+    response = client.post("/auth/forgot?" + f"email={user['email']}")
+
+    json_response = response.json()
+    assert json_response["success"], json_response
+    assert response.status_code == 200, "Response not a success"
+
+    otp = email.cache[user["email"]]
+
+    new_pass = "something_new"
+    update_password = {"email": user["email"], "otp": otp, "new_password": new_pass}
+    response = client.post("/auth/reset", json=update_password)
+
+    assert json_response["success"], json_response["errmsg"]
+    assert response.status_code == 200, "Response not a success"
 
 
 def test_add_profile():

@@ -7,6 +7,7 @@ from placy.controllers.auth import AuthController
 from placy.models.response import Health
 from placy.routes.auth import setupAuthRoutes
 from placy.services.database import DatabaseService
+from placy.services.email import EmailService
 from placy.services.logging import LoggingService
 
 
@@ -18,6 +19,7 @@ class Placy:
         app: FastAPI,
         databaseService: DatabaseService,
         loggingService: LoggingService,
+        emailService: EmailService,
         config: dict[str, str | None],
         authController: AuthController,
     ) -> None:

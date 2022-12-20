@@ -5,7 +5,7 @@ from collections import namedtuple
 from http import HTTPStatus
 from typing import Any, Tuple
 
-from placy.models.auth import OTP, Auth, Profile, User
+from placy.models.auth import OTP, Auth, Profile, UpdatePassword, User
 from pymongo import MongoClient
 
 DatabaseResponse = namedtuple("DatabaseResponse", ["data", "errmsg", "status"])
@@ -38,7 +38,7 @@ class DatabaseService:
         print(otp)
         return ("", "", 0)
 
-    def search_otp(self, email: str) -> OTP | None:
+    def search_otp(self, update: UpdatePassword) -> OTP | None:
         """Search for a OTP in the database."""
         print(email)
         return None
@@ -48,6 +48,20 @@ class DatabaseService:
         print(user)
         print(profile)
         return DatabaseResponse(data=False, errmsg="", status=0)
+
+    def update_user_password(
+        self, email: str, password: str, salt: str
+    ) -> DatabaseResponse:
+        """Update given user's password."""
+        print(email)
+        print(password)
+        print(salt)
+        return DatabaseResponse(data="", errmsg="", status=0)
+
+    def delete_otp(self, update: UpdatePassword) -> DatabaseResponse:
+        """Delete a given OTP."""
+        print(update)
+        return DatabaseResponse(data="", errmsg="", status=0)
 
 
 class MongoService(DatabaseService):
@@ -154,3 +168,64 @@ class MongoService(DatabaseService):
         id = self.otp_collection.insert_one(payload).inserted_id
 
         return (id, "", 200)
+
+    def search_otp(self, update: UpdatePassword) -> OTP | None:
+        """Search a given OTP."""
+        if self.client == None:
+            return None
+
+        result = self.otp_collection.find_one(
+            {"email": update.email, "used": False, "otp": update.otp}
+        )
+
+        if result == None:
+            return None
+
+        otp = OTP.parse_obj(result.dict())
+
+        return otp
+
+    def delete_otp(self, update: UpdatePassword) -> DatabaseResponse:
+        """Delete (soft-delete) a given OTP."""
+        if self.client == None:
+            return DatabaseResponse(
+                data="",
+                status=HTTPStatus.INTERNAL_SERVER_ERROR,
+                errmsg="MongoDB connection is null.",
+            )
+
+        result = self.otp_collection.update_one(
+            filter={"email": update.email, "otp": update.otp},
+            update={"$set": {"used": True}},
+        )
+
+        if result.matched_count == 1 and result.modified_count == 1:
+            return DatabaseResponse(status=HTTPStatus.OK, errmsg="", data="")
+
+        return DatabaseResponse(
+            status=HTTPStatus.INTERNAL_SERVER_ERROR,
+            errmsg="Did not soft-delete OTP.",
+            data=False,
+        )
+
+    def update_user_password(
+        self, email: str, password: str, salt: str
+    ) -> DatabaseResponse:
+        """Update given user's password."""
+        if self.client == None:
+            return DatabaseResponse(
+                data="",
+                status=HTTPStatus.INTERNAL_SERVER_ERROR,
+                errmsg="MongoDB connection is null.",
+            )
+        result = self.user_collection.update_one(
+            filter={"auth.email": email},
+            update={"$set": {"auth.password": password, "auth.salt": salt}},
+        )
+
+        if result.matched_count == 1 and result.modified_count == 1:
+            return DatabaseResponse(status=HTTPStatus.OK, errmsg="", data=True)
+
+        return DatabaseResponse(
+            status=HTTPStatus.BAD_REQUEST, errmsg="User not updated.", data=False
+        )
