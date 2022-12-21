@@ -1,5 +1,5 @@
-import { Pressable, StyleSheet, Text, TextInput, ToastAndroid, TouchableOpacity, View } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import { Platform, Text, TextInput, ToastAndroid, TouchableOpacity, View } from 'react-native'
+import React, { useEffect, useRef, useState } from 'react'
 import sharedStyles from './sharedStyles'
 import colors from '../../theme/colors'
 import OtpInput from '../../components/OtpInput'
@@ -24,7 +24,7 @@ const VerifyPassword = ({ navigation, route }) => {
     authService.reset(email, otpCode, password)
   }
   const resend = async () => {
-    ToastAndroid.show(`OTP has been sent to ${email}`, ToastAndroid.SHORT)
+    Platform.OS == 'android' && ToastAndroid.show(`OTP has been sent to ${email}`, ToastAndroid.SHORT)
     authService.forgot(email)
   }
 
