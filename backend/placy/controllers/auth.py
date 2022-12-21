@@ -4,11 +4,13 @@ import random
 from collections import namedtuple
 from datetime import datetime, timedelta
 from http import HTTPStatus
-from typing import Tuple
+from typing import Any, Tuple
 
 import jwt
 from fastapi.encoders import jsonable_encoder
-from placy.models.auth import OTP, Auth, PasswordUpdate, Profile, User
+from mongoengine.fields import dateutil
+from placy.models.auth import Auth, PasswordUpdate
+from placy.models.auth_orm import OTP, User
 from placy.models.response import (
     AuthResponse,
     ErrorResponse,
@@ -19,7 +21,7 @@ from placy.services.database import DatabaseService
 from placy.services.email import EmailService
 from pydantic import EmailStr
 
-TokenResponse = namedtuple("TokenResponse", ["user", "error"])
+TokenResponse = namedtuple("TokenResponse", ["confirmed", "error"])
 
 
 class AuthController:
@@ -50,7 +52,8 @@ class AuthController:
 
         exp = datetime.now() + timedelta(minutes=15)
 
-        instance = OTP(email=EmailStr(email), otp=otp, exp=exp, used=False)
+        instance = OTP(email=EmailStr(email), otp=otp, exp=exp)
+
         return instance
 
     def reset(self, update: PasswordUpdate) -> ErrorResponse:
@@ -63,17 +66,11 @@ class AuthController:
             )
 
         now = datetime.now()
+        exp = dateutil.parser.parse(str(otp.exp))
 
-        if otp.exp < now:
+        if exp < now:
             return ErrorResponse(
                 status=HTTPStatus.BAD_REQUEST, success=False, errmsg="OTP has expired."
-            )
-
-        result = self.db.delete_otp(update)
-
-        if result.status != HTTPStatus.OK:
-            return ErrorResponse(
-                status=result.status, success=False, errmsg=result.errmsg
             )
 
         (salt, hash) = self.generate_hash(update.new_password)
@@ -98,9 +95,13 @@ class AuthController:
         if id == "":
             return ErrorResponse(success=False, errmsg=errmsg, status=status_code)
 
-        self.email.send_email(email, otp.otp)
+        # self.email.send_email(email, otp.otp)
 
         return ErrorResponse(success=True, errmsg="null", status=HTTPStatus.OK)
+
+    def checkhealth(self, status: str):
+        """Route to handle health request."""
+        return Health(status="OK", version=0.1)
 
     def refresh(self, token_header: str | None) -> ErrorResponse | JWTRefreshResponse:
         """Route to handle JWT Token refresh."""
@@ -111,55 +112,46 @@ class AuthController:
                 errmsg="No authorization header.",
             )
 
-        (user, error) = self.confirmToken(token_header=token_header)
+        (auth, error) = self.decodeToken(token_header=token_header)
 
-        if user == None or error != None:
+        if not auth and error:
             return error
 
-        (new_token, refresh_token) = self.generateToken(user)
+        (new_token, refresh_token) = self.generateToken(auth)
 
         return JWTRefreshResponse(
             status=HTTPStatus.OK, success=True, token=new_token, refresh=refresh_token
         )
 
-    def checkhealth(self, status: str):
-        """Route to handle health request."""
-        return Health(status="OK", version=0.1)
-
     def signup(self, auth: Auth) -> AuthResponse | ErrorResponse:
         """Route to handle user signup."""
         (salt, hash_password) = self.generate_hash(auth.password)
 
-        auth.password = hash_password
-        auth.salt = salt
-
         user = User(
-            auth=auth,
+            email=auth.email,
+            username=auth.username,
+            password=hash_password,
             created_at=datetime.now(),
             updated_at=datetime.now(),
-            profile_completed=False,
-            profile=None,
+            salt=salt,
         )
 
-        (id, errmsg, status_code) = self.db.add_user(user)
+        db_response = self.db.add_user(user)
 
-        if id == "":
+        if db_response.status == HTTPStatus.OK:
             return ErrorResponse(
-                status=status_code,
+                status=db_response.status,
                 success=False,
-                errmsg=errmsg,
+                errmsg=db_response.errmsg,
             )
 
-        user.auth.password = ""
-        user.auth.salt = None
-
         return AuthResponse(
-            status=200, success=True, error=None, payload=user, token=None, refresh=None
+            status=200, success=True, error=None, payload=auth, token=None, refresh=None
         )
 
     def login(self, auth: Auth) -> AuthResponse | ErrorResponse:
         """Route to handle user signin."""
-        foundUser = self.db.search_user(auth)
+        foundUser = self.db.search_user(auth.email)
 
         if foundUser == None:
             return ErrorResponse(
@@ -168,14 +160,14 @@ class AuthController:
 
         if not self.comparePasswords(
             givenPass=auth.password,
-            actualPass=foundUser.auth.password,
-            salt=foundUser.auth.salt if foundUser.auth.salt else "",
+            actualPass=foundUser.password,
+            salt=foundUser.salt,
         ):
             return ErrorResponse(
                 status=400, errmsg="email/password wrong", success=False
             )
 
-        (token, refresh) = self.generateToken(foundUser)
+        (token, refresh) = self.generateToken(auth.dict(exclude={"password"}))
 
         if token == "":
             return ErrorResponse(
@@ -184,22 +176,17 @@ class AuthController:
                 errmsg="Can't generate token. SECRET_KEY empty.",
             )
 
-        foundUser.auth.password = ""
-        foundUser.auth.salt = ""
-
         return AuthResponse(
             status=HTTPStatus.OK,
             success=True,
             error=None,
-            payload=foundUser,
+            payload=auth,
             token=token,
             refresh=refresh,
         )
 
-    def generateToken(self, user: User) -> Tuple[str, str]:
+    def generateToken(self, payload: dict[str, Any]) -> Tuple[str, str]:
         """Generate a pair of JWT Token."""
-        payload = jsonable_encoder(user, exclude={"auth": {"password", "salt"}})
-
         payload["exp"] = datetime.now() + timedelta(days=1)
 
         key = ""
@@ -216,28 +203,7 @@ class AuthController:
 
         return (token, refresh)
 
-    def profile(self, profile: Profile, authorization: str | None) -> ErrorResponse:
-        """Update the profile for the user."""
-        if authorization == None:
-            return ErrorResponse(
-                status=HTTPStatus.BAD_REQUEST,
-                success=False,
-                errmsg="Authorization token absent.",
-            )
-
-        response = self.confirmToken(authorization)
-
-        if response.error != None:
-            return response.error
-
-        (result, errmsg, status) = self.db.update_user_profile(response.user, profile)
-
-        if result == False:
-            return ErrorResponse(success=False, status=status, errmsg=errmsg)
-
-        return ErrorResponse(success=True, status=status, errmsg=errmsg)
-
-    def confirmToken(self, token_header: str) -> TokenResponse:
+    def decodeToken(self, token_header: str) -> TokenResponse:
         """Decode the JWT token and return the body."""
         token = token_header.split()[1]
         decoded = None
@@ -246,17 +212,16 @@ class AuthController:
             decoded = jwt.decode(token, self.config["SECRET_KEY"], algorithms=["HS256"])
         except jwt.ExpiredSignatureError:
             return TokenResponse(
-                user=None,
+                confirmed=False,
                 error=ErrorResponse(
                     success=False,
                     errmsg="JWT token has expired",
                     status=HTTPStatus.UNAUTHORIZED,
                 ),
             )
-
         except Exception as e:
             return TokenResponse(
-                user=None,
+                confirmed=False,
                 error=ErrorResponse(
                     success=False,
                     errmsg=str(e),
@@ -264,18 +229,4 @@ class AuthController:
                 ),
             )
 
-        if decoded == None:
-            return TokenResponse(
-                user=None,
-                error=ErrorResponse(
-                    success=False,
-                    errmsg="Error parsing JWT token.",
-                    status=HTTPStatus.INTERNAL_SERVER_ERROR,
-                ),
-            )
-
-        # Required for converting to object.
-        decoded["auth"]["password"] = ""
-        user = User.parse_obj(decoded)
-
-        return TokenResponse(user=user, error=None)
+        return TokenResponse(confirmed=decoded, error=None)

@@ -5,7 +5,10 @@ from collections import namedtuple
 from http import HTTPStatus
 from typing import Any, Tuple
 
-from placy.models.auth import OTP, Auth, PasswordUpdate, Profile, User
+from mongoengine import connect
+from mongoengine.errors import NotUniqueError
+from placy.models.auth import Auth, PasswordUpdate
+from placy.models.auth_orm import OTP, User
 from pymongo import MongoClient
 
 DatabaseResponse = namedtuple("DatabaseResponse", ["data", "errmsg", "status"])
@@ -23,14 +26,14 @@ class DatabaseService:
         print(config)
         pass
 
-    def add_user(self, user: User) -> Tuple[str, str, int]:
+    def add_user(self, user: User) -> DatabaseResponse:
         """Add user to the database."""
         print(user)
-        return ("", "", 0)
+        return DatabaseResponse("", "", 0)
 
-    def search_user(self, auth: Auth) -> User | None:
+    def search_user(self, email: str) -> User | None:
         """Search user in the database."""
-        print(auth)
+        print(email)
         return None
 
     def add_otp(self, otp: OTP) -> Tuple[str, str, int]:
@@ -40,14 +43,8 @@ class DatabaseService:
 
     def search_otp(self, update: PasswordUpdate) -> OTP | None:
         """Search for a OTP in the database."""
-        print(email)
+        print(update)
         return None
-
-    def update_user_profile(self, user: User, profile: Profile) -> DatabaseResponse:
-        """Update given user's profile."""
-        print(user)
-        print(profile)
-        return DatabaseResponse(data=False, errmsg="", status=0)
 
     def update_user_password(
         self, email: str, password: str, salt: str
@@ -77,155 +74,101 @@ class MongoService(DatabaseService):
         if config.get("MONGO_URI") == None:
             raise Exception("MONGO_URI is empty")
 
-        self.client = MongoClient(config["MONGO_URI"])
-        db = self.client["placy"]
-        collection = db["users"]
-
-        self.user_collection = collection
-
-        db = self.client["placy"]
-        collection = db["otp"]
-
-        self.otp_collection = collection
-
-    def update_user_profile(self, user: User, profile: Profile) -> DatabaseResponse:
-        """Update details for a user."""
-        if self.client == None:
-            return DatabaseResponse(
-                data="",
-                errmsg="Mongo connection is null.",
-                status=HTTPStatus.INTERNAL_SERVER_ERROR,
-            )
-
-        exists = self.search_user(user.auth)
-
-        if not exists:
-            return DatabaseResponse(
-                data="", errmsg="User does not exist", status=HTTPStatus.NOT_FOUND
-            )
-
-        profile_payload = profile.dict()
-
-        result = self.user_collection.update_one(
-            filter={"auth.email": user.auth.email},
-            update={"$set": {"profile": profile_payload}},
-        )
-
-        if result.modified_count == 1 and result.matched_count == 1:
-            return DatabaseResponse(True, "", HTTPStatus.OK)
-
-        return DatabaseResponse(
-            False, "No documents found/modified", HTTPStatus.INTERNAL_SERVER_ERROR
-        )
+        connect(db="placy")
 
     def add_user(self, user: User) -> DatabaseResponse:
         """Add a user into MongoDB database."""
-        if self.client == None:
+        response = None
+
+        try:
+            response = user.save(force_insert=True)
+        except NotUniqueError:
+            return DatabaseResponse(
+                data="", errmsg="User already exists", status=HTTPStatus.CONFLICT
+            )
+        except Exception as e:
+            return DatabaseResponse(
+                data="", errmsg=str(e), status=HTTPStatus.INTERNAL_SERVER_ERROR
+            )
+
+        if response.id:
+            return DatabaseResponse(data=id, errmsg="", status=HTTPStatus.CREATED)
+        else:
             return DatabaseResponse(
                 data="",
-                errmsg="Mongo connection is null.",
+                errmsg="Error saving user to database.",
                 status=HTTPStatus.INTERNAL_SERVER_ERROR,
             )
 
-        exists = self.search_user(user.auth)
-
-        if exists:
-            return DatabaseResponse(
-                data="",
-                errmsg="User with email already exists.",
-                status=HTTPStatus.CONFLICT,
-            )
-
-        payload = user.dict()
-        id = self.user_collection.insert_one(payload).inserted_id
-
-        return DatabaseResponse(data=id, errmsg="", status=HTTPStatus.CREATED)
-
-    def search_user(self, auth: Auth) -> User | None:
+    def search_user(self, email: str) -> User | None:
         """Search for a given user in MongoDB database."""
-        if self.client == None:
+        result = None
+
+        try:
+            result = User.objects.get(email=email)
+        except:
             return None
 
-        result = self.user_collection.find_one({"auth.email": auth.email})
+        return result
 
-        if result == None:
-            return result
-
-        user = User.parse_obj(result)
-
-        return user
-
-    def add_otp(self, otp: OTP) -> Tuple[str, str, int]:
+    def add_otp(self, otp: OTP) -> DatabaseResponse:
         """Add the OTP instance to the MongoDB database."""
-        if self.client == None:
-            return (
-                "",
-                "Mongo connection is null.",
-                HTTPStatus.INTERNAL_SERVER_ERROR,
+        response = None
+
+        try:
+            response = otp.save()
+        except Exception as e:
+            return DatabaseResponse(
+                data="", errmsg=str(e), status=HTTPStatus.INTERNAL_SERVER_ERROR
             )
-
-        payload = otp.dict()
-        id = self.otp_collection.insert_one(payload).inserted_id
-
-        return (id, "", 200)
+        if response.id:
+            return DatabaseResponse(data=id, errmsg="", status=HTTPStatus.CREATED)
+        else:
+            return DatabaseResponse(
+                data="",
+                errmsg="Error saving otp to database.",
+                status=HTTPStatus.INTERNAL_SERVER_ERROR,
+            )
 
     def search_otp(self, update: PasswordUpdate) -> OTP | None:
         """Search a given OTP."""
-        if self.client == None:
+        result = None
+
+        try:
+            result = OTP.objects.get(email=update.email)
+        except:
             return None
 
-        result = self.otp_collection.find_one(
-            {"email": update.email, "used": False, "otp": update.otp}
-        )
-
-        if result == None:
-            return None
-
-        otp = OTP.parse_obj(result.dict())
-
-        return otp
-
-    def delete_otp(self, update: PasswordUpdate) -> DatabaseResponse:
-        """Delete (soft-delete) a given OTP."""
-        if self.client == None:
-            return DatabaseResponse(
-                data="",
-                status=HTTPStatus.INTERNAL_SERVER_ERROR,
-                errmsg="MongoDB connection is null.",
-            )
-
-        result = self.otp_collection.update_one(
-            filter={"email": update.email, "otp": update.otp},
-            update={"$set": {"used": True}},
-        )
-
-        if result.matched_count == 1 and result.modified_count == 1:
-            return DatabaseResponse(status=HTTPStatus.OK, errmsg="", data="")
-
-        return DatabaseResponse(
-            status=HTTPStatus.INTERNAL_SERVER_ERROR,
-            errmsg="Did not soft-delete OTP.",
-            data=False,
-        )
+        return result
 
     def update_user_password(
         self, email: str, password: str, salt: str
     ) -> DatabaseResponse:
         """Update given user's password."""
-        if self.client == None:
+        user = self.search_user(email)
+
+        if user == None:
+            return DatabaseResponse(
+                status=HTTPStatus.NOT_FOUND, errmsg="User not found", data=""
+            )
+
+        user.password = password
+        user.salt = salt
+
+        response = None
+
+        try:
+            response = user.save()
+        except Exception as e:
+            return DatabaseResponse(
+                data="", errmsg=str(e), status=HTTPStatus.INTERNAL_SERVER_ERROR
+            )
+
+        if response.id:
+            return DatabaseResponse(data=id, errmsg="", status=HTTPStatus.CREATED)
+        else:
             return DatabaseResponse(
                 data="",
+                errmsg="Error saving user to database.",
                 status=HTTPStatus.INTERNAL_SERVER_ERROR,
-                errmsg="MongoDB connection is null.",
             )
-        result = self.user_collection.update_one(
-            filter={"auth.email": email},
-            update={"$set": {"auth.password": password, "auth.salt": salt}},
-        )
-
-        if result.matched_count == 1 and result.modified_count == 1:
-            return DatabaseResponse(status=HTTPStatus.OK, errmsg="", data=True)
-
-        return DatabaseResponse(
-            status=HTTPStatus.BAD_REQUEST, errmsg="User not updated.", data=False
-        )
