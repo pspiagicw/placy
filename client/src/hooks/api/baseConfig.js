@@ -1,63 +1,62 @@
-import axios, { AxiosRequestHeaders } from "axios";
-import config from "../../config";
+import axios, { AxiosRequestHeaders } from 'axios';
+import config from '../../config';
 
 const baseConfig = {
-  baseURL: config.baseUrl,
-  headers: {
-    "Content-Type": "application/json",
-  },
+   baseURL: config.baseUrl,
+   headers: {
+      'Content-Type': 'application/json',
+   },
 };
 
-const getUnauthenticatedConfig = (url = "") => {
-  const getBaseURL = () => {
-    const baseURL = baseConfig.baseURL;
-    const updatedBaseURL = `${baseURL}${url}`;
-    return updatedBaseURL;
-  };
-  const configuration = { ...baseConfig };
-  configuration.baseURL = getBaseURL();
-  return configuration;
+const getUnauthenticatedConfig = (url = '') => {
+   const getBaseURL = () => {
+      const baseURL = baseConfig.baseURL;
+      const updatedBaseURL = `${baseURL}${url}`;
+      return updatedBaseURL;
+   };
+   const configuration = { ...baseConfig };
+   configuration.baseURL = getBaseURL();
+   return configuration;
 };
 
 const getAuthenticatedConfig = (token, url = '') => {
-  const configuration = getUnauthenticatedConfig(url);
-  configuration['headers']['Authorization'] = token;
-  return configuration;
+   const configuration = getUnauthenticatedConfig(url);
+   configuration['headers']['Authorization'] = token;
+   return configuration;
 };
 
-
 export const getUnauthenticatedAxios = (url = '') => {
-  const config = getUnauthenticatedConfig(url);
-  const unauthenticatedAxios = axios.create(config);
-  unauthenticatedAxios.interceptors.response.use(
-    response => {
-      let res = response.data;
-      return res.data;
-    },
-    error => {
-      let err = error.response.data;
-      console.error(err);
-      throw err.error;
-    },
-  );
+   const config = getUnauthenticatedConfig(url);
+   const unauthenticatedAxios = axios.create(config);
+   unauthenticatedAxios.interceptors.response.use(
+      response => {
+         let res = response.data;
+         return res.data;
+      },
+      error => {
+         let err = error.response.data;
+         console.error(err);
+         throw err.error;
+      },
+   );
 
-  return unauthenticatedAxios;
+   return unauthenticatedAxios;
 };
 
 export const getAuthenticatedAxios = (url, token) => {
-  const config = getAuthenticatedConfig(token, url);
-  const authenticatedAxios = axios.create(config);
-  authenticatedAxios.interceptors.response.use(
-    response => {
-      let res = response.data;
-      return res.data;
-    },
-    error => {
-      let err = error.response.data;
-      console.error(err);
-      throw err.error;
-    },
-  );
+   const config = getAuthenticatedConfig(token, url);
+   const authenticatedAxios = axios.create(config);
+   authenticatedAxios.interceptors.response.use(
+      response => {
+         let res = response.data;
+         return res.data;
+      },
+      error => {
+         let err = error.response.data;
+         console.error(err);
+         throw err.error;
+      },
+   );
 
-  return authenticatedAxios;
-}
+   return authenticatedAxios;
+};

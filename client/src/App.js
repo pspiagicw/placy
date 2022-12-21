@@ -1,25 +1,25 @@
-import { registerRootComponent } from "expo";
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
-import { Provider } from "react-redux";
-import store from "./store";
-import Routes from './navigation'
+import { registerRootComponent } from 'expo';
+import { StatusBar } from 'expo-status-bar';
+import { StyleSheet, Text, View } from 'react-native';
+import { Provider } from 'react-redux';
+import store from './store';
+import Routes from './navigation';
 
 function App() {
-  return (
-    <Provider store={store}>
-      <Routes />
-    </Provider>
-  );
+   return (
+      <Provider store={store}>
+         <Routes />
+      </Provider>
+   );
 }
 
-registerRootComponent(App)
+registerRootComponent(App);
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
+   container: {
+      flex: 1,
+      backgroundColor: '#fff',
+      alignItems: 'center',
+      justifyContent: 'center',
+   },
 });
