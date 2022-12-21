@@ -1,12 +1,14 @@
-import { StyleSheet } from "react-native";
+import { Platform, StyleSheet } from "react-native";
 import colors from "../../theme/colors";
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'white',
         paddingTop: 20,
         paddingHorizontal: 25,
+        alignSelf: 'center',
+        width: Platform.OS == "web" ? "30%" : "100%",
+        minWidth: Platform.OS == "web" ? 500 : "auto"
     },
     topContainer: {
         display: 'flex',
