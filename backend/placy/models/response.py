@@ -26,7 +26,7 @@ class AuthResponse(BaseModel):
     status: int
     success: bool
     error: str | None
-    payload: User
+    payload: auth
     token: str | None
     refresh: str | None
 

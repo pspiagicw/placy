@@ -8,7 +8,7 @@ from typing import Tuple
 
 import jwt
 from fastapi.encoders import jsonable_encoder
-from placy.models.auth import OTP, Auth, Profile, UpdatePassword, User
+from placy.models.auth import OTP, Auth, PasswordUpdate, Profile, User
 from placy.models.response import (
     AuthResponse,
     ErrorResponse,
@@ -53,7 +53,7 @@ class AuthController:
         instance = OTP(email=EmailStr(email), otp=otp, exp=exp, used=False)
         return instance
 
-    def reset(self, update: UpdatePassword) -> ErrorResponse:
+    def reset(self, update: PasswordUpdate) -> ErrorResponse:
         """Route to handle reset password requests."""
         otp = self.db.search_otp(update)
 

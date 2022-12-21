@@ -5,7 +5,7 @@ from collections import namedtuple
 from http import HTTPStatus
 from typing import Any, Tuple
 
-from placy.models.auth import OTP, Auth, Profile, UpdatePassword, User
+from placy.models.auth import OTP, Auth, PasswordUpdate, Profile, User
 from pymongo import MongoClient
 
 DatabaseResponse = namedtuple("DatabaseResponse", ["data", "errmsg", "status"])
@@ -38,7 +38,7 @@ class DatabaseService:
         print(otp)
         return ("", "", 0)
 
-    def search_otp(self, update: UpdatePassword) -> OTP | None:
+    def search_otp(self, update: PasswordUpdate) -> OTP | None:
         """Search for a OTP in the database."""
         print(email)
         return None
@@ -58,7 +58,7 @@ class DatabaseService:
         print(salt)
         return DatabaseResponse(data="", errmsg="", status=0)
 
-    def delete_otp(self, update: UpdatePassword) -> DatabaseResponse:
+    def delete_otp(self, update: PasswordUpdate) -> DatabaseResponse:
         """Delete a given OTP."""
         print(update)
         return DatabaseResponse(data="", errmsg="", status=0)
@@ -169,7 +169,7 @@ class MongoService(DatabaseService):
 
         return (id, "", 200)
 
-    def search_otp(self, update: UpdatePassword) -> OTP | None:
+    def search_otp(self, update: PasswordUpdate) -> OTP | None:
         """Search a given OTP."""
         if self.client == None:
             return None
@@ -185,7 +185,7 @@ class MongoService(DatabaseService):
 
         return otp
 
-    def delete_otp(self, update: UpdatePassword) -> DatabaseResponse:
+    def delete_otp(self, update: PasswordUpdate) -> DatabaseResponse:
         """Delete (soft-delete) a given OTP."""
         if self.client == None:
             return DatabaseResponse(

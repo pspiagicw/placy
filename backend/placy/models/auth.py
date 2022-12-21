@@ -15,7 +15,7 @@ class RoleEnum(str, Enum):
     admin = "admin"
 
 
-class UpdatePassword(BaseModel):
+class PasswordUpdate(BaseModel):
     """Model for updated password."""
 
     email: EmailStr

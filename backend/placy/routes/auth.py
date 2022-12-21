@@ -2,7 +2,7 @@
 
 from fastapi import FastAPI, Header, Response
 from placy.controllers.auth import AuthController
-from placy.models.auth import Auth, Profile, UpdatePassword
+from placy.models.auth import Auth, PasswordUpdate, Profile
 from placy.models.response import AuthResponse, ErrorResponse, JWTRefreshResponse
 from pydantic import EmailStr
 
@@ -67,7 +67,7 @@ def setupAuthRoutes(app: FastAPI, controller: AuthController) -> None:
         return response
 
     @app.post("/reset")
-    def reset(update: UpdatePassword, temp: Response):
+    def reset(update: PasswordUpdate, temp: Response):
         response = controller.reset(update)
         temp.status_code = response.status
         return response
