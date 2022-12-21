@@ -3,7 +3,6 @@
 import random
 from typing import Any
 
-from dotenv import dotenv_values
 from faker import Faker
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -33,6 +32,7 @@ app = FastAPI()
 config = {
     "SECRET_KEY": "someusefulpassword",
     "MONGO_URI": "mongodb://localhost:27017",
+    "SENDGRID_API_KEY": "somethingfake",
 }
 database = MongoService()
 email = MockEmailService(config)
