@@ -58,7 +58,7 @@ class AuthController:
 
     def reset(self, update: PasswordUpdate) -> ErrorResponse:
         """Route to handle reset password requests."""
-        otp = self.db.search_otp(update)
+        otp = self.db.search_otp(update.email)
 
         if otp == None:
             return ErrorResponse(

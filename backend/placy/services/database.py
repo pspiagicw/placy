@@ -41,9 +41,9 @@ class DatabaseService:
         print(otp)
         return ("", "", 0)
 
-    def search_otp(self, update: PasswordUpdate) -> OTP | None:
+    def search_otp(self, email: str) -> OTP | None:
         """Search for a OTP in the database."""
-        print(update)
+        print(email)
         return None
 
     def update_user_password(
@@ -113,6 +113,24 @@ class MongoService(DatabaseService):
 
     def add_otp(self, otp: OTP) -> DatabaseResponse:
         """Add the OTP instance to the MongoDB database."""
+        user = self.search_user(str(otp.email))
+
+        if user == None:
+            return DatabaseResponse(
+                data="",
+                errmsg="User with email does not exist",
+                status=HTTPStatus.NOT_FOUND,
+            )
+
+        found_otp = self.search_otp(str(otp.email))
+
+        # OTP already exists, try to overwrite.
+        # Or else it gives key not unique error.
+        if found_otp != None:
+            found_otp.otp = otp.otp
+            found_otp.exp = otp.exp
+            otp = found_otp
+
         response = None
 
         try:
@@ -121,6 +139,7 @@ class MongoService(DatabaseService):
             return DatabaseResponse(
                 data="", errmsg=str(e), status=HTTPStatus.INTERNAL_SERVER_ERROR
             )
+
         if response.id:
             return DatabaseResponse(data=id, errmsg="", status=HTTPStatus.CREATED)
         else:
@@ -130,12 +149,12 @@ class MongoService(DatabaseService):
                 status=HTTPStatus.INTERNAL_SERVER_ERROR,
             )
 
-    def search_otp(self, update: PasswordUpdate) -> OTP | None:
+    def search_otp(self, email: str) -> OTP | None:
         """Search a given OTP."""
         result = None
 
         try:
-            result = OTP.objects.get(email=update.email)
+            result = OTP.objects.get(email=email)
         except:
             return None
 

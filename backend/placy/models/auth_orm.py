@@ -22,6 +22,6 @@ class User(Document):
 class OTP(Document):
     """Model for OTP."""
 
-    email = EmailField(required=True)
+    email = EmailField(required=True, unique=True)
     otp = StringField(required=True)
     exp = DateTimeField(required=True)
