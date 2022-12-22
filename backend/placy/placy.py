@@ -3,9 +3,11 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi import Response as Response
+from fastapi.staticfiles import StaticFiles
 from placy.controllers.auth import AuthController
 from placy.models.response import Health
 from placy.routes.auth import setupAuthRoutes
+from placy.services.config import Config
 from placy.services.database import DatabaseService
 from placy.services.email import EmailService
 from placy.services.logging import LoggingService
@@ -20,7 +22,7 @@ class Placy:
         databaseService: DatabaseService,
         loggingService: LoggingService,
         emailService: EmailService,
-        config: dict[str, str | None],
+        config: Config,
         authController: AuthController,
     ) -> None:
         """Construct for the Application class."""
@@ -29,6 +31,7 @@ class Placy:
         self.config = config
         self.logging_service = loggingService
         self.authController = authController
+        self.emailService = emailService
 
     def setup(self) -> None:
         """Perform initialization for backend application."""
@@ -46,6 +49,8 @@ class Placy:
         def health():
             response = self.authController.checkhealth(self.app.version)
             return response
+
+        self.app.mount("/code", StaticFiles(directory="docs", html=True), name="docs")
 
         setupAuthRoutes(app=self.app, controller=self.authController)
 

@@ -3,11 +3,13 @@
 
 import logging
 
+from placy.services.config import Config
+
 
 class LoggingService:
     """Superclass for injecting Logging as a service into application."""
 
-    def setup(self, config: dict[str, str]) -> None:
+    def setup(self, config: Config) -> None:
         """Initialize logging service."""
 
     def log_info(self, data: str) -> None:

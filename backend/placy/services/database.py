@@ -3,13 +3,13 @@
 
 from collections import namedtuple
 from http import HTTPStatus
-from typing import Any, Tuple
+from typing import Tuple
 
 from mongoengine import connect
 from mongoengine.errors import NotUniqueError
-from placy.models.auth import Auth, PasswordUpdate
+from placy.models.auth import PasswordUpdate
 from placy.models.auth_orm import OTP, User
-from pymongo import MongoClient
+from placy.services.config import Config
 
 DatabaseResponse = namedtuple("DatabaseResponse", ["data", "errmsg", "status"])
 
@@ -21,7 +21,7 @@ class DatabaseService:
         """Construct Database Service class."""
         pass
 
-    def setup(self, config: dict[str, str | None]) -> None:
+    def setup(self, config: Config) -> None:
         """Initialize connection to database."""
         print(config)
         pass
@@ -50,7 +50,6 @@ class DatabaseService:
         """Update given user's password."""
         print(email)
         print(password)
-        print(salt)
         return DatabaseResponse(data="", errmsg="", status=0)
 
     def delete_otp(self, update: PasswordUpdate) -> DatabaseResponse:
@@ -67,11 +66,8 @@ class MongoService(DatabaseService):
         self.client = None
         super().__init__()
 
-    def setup(self, config: dict[str, str | None]) -> None:
+    def setup(self, config: Config) -> None:
         """Connect to MongoDB."""
-        if config.get("MONGO_URI") == None:
-            raise Exception("MONGO_URI is empty")
-
         connect(db="placy")
 
     def add_user(self, user: User) -> DatabaseResponse:

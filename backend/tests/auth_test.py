@@ -7,6 +7,7 @@ from faker import Faker
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from placy.controllers.auth import AuthController
+from placy.services.config import Config
 from placy.services.database import MongoService
 from placy.services.email import EmailService
 from placy.services.logging import DefaultLogger
@@ -17,7 +18,7 @@ from placy.placy import Placy
 class MockEmailService(EmailService):
     """Mock sending emails."""
 
-    def __init__(self, config: dict[str, str]):
+    def __init__(self, config: Config):
         """Construct the Mock Emailer."""
         super().__init__(config)
         self.cache = dict()
@@ -29,11 +30,12 @@ class MockEmailService(EmailService):
 
 app = FastAPI()
 # Testing config
-config = {
+env = {
     "SECRET_KEY": "someusefulpassword",
     "MONGO_URI": "mongodb://localhost:27017",
     "SENDGRID_API_KEY": "somethingfake",
 }
+config = Config(mongo_uri=env["MONGO_URI"], sendgrid_api_key=env["SENDGRID_API_KEY"])
 database = MongoService()
 email = MockEmailService(config)
 authController = AuthController(database, config, email)

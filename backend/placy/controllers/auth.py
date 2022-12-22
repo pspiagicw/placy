@@ -1,7 +1,5 @@
 """Module has controllers for Authentication."""
 
-import hashlib
-import os
 import random
 from collections import namedtuple
 from datetime import datetime, timedelta
@@ -9,7 +7,6 @@ from http import HTTPStatus
 from typing import Any, Tuple
 
 import jwt
-from fastapi.encoders import jsonable_encoder
 from mongoengine.fields import dateutil
 from passlib.hash import pbkdf2_sha256
 from placy.models.auth import Auth, PasswordUpdate
@@ -20,6 +17,7 @@ from placy.models.response import (
     Health,
     JWTRefreshResponse,
 )
+from placy.services.config import Config
 from placy.services.database import DatabaseService
 from placy.services.email import EmailService
 from pydantic import EmailStr
@@ -30,9 +28,7 @@ TokenResponse = namedtuple("TokenResponse", ["confirmed", "error"])
 class AuthController:
     """Router handles all routing."""
 
-    def __init__(
-        self, db: DatabaseService, config: dict[str, str], email: EmailService
-    ):
+    def __init__(self, db: DatabaseService, config: Config, email: EmailService):
         """Construct the Router class."""
         self.db = db
         self.config = config
@@ -40,32 +36,18 @@ class AuthController:
 
     def generate_hash(self, password: str) -> str:
         """Generate a hash and the salt to store."""
-        # salt = "".join([str(random.randint(0, 9)) for _ in range(6)])
-        # hash = password + salt
-        # salt = os.urandom(16)
-        # hash = hashlib.scrypt(password=password.encode('base64'), salt=salt,n=32,r=8,p=1)
         hash = pbkdf2_sha256.hash(password)
-
-        # salt = hash.decode('base64')
-        # hash = hash.decode('base64')
-
         return hash
 
     def comparePasswords(self, hashedPass: str, givenPass: str) -> bool:
         """Compare passwords."""
-        # return givenPass + salt == actualPass
-        # hash = hashlib.scrypt(password=givenPass.encode('base64'), salt=salt.encode('base64'), n=32, r=8, p=1)
-        #
-        # hash = hash.decode()
-        #
-        # return hash == actualPass
         return pbkdf2_sha256.verify(givenPass, hashedPass)
 
     def generate_otp(self, email: str) -> OTP:
         """Generate a OTP instance."""
         otp = "".join([str(random.randint(0, 9)) for _ in range(6)])
 
-        exp = datetime.now() + timedelta(minutes=15)
+        exp = datetime.now() + self.config.otp_expiry
 
         instance = OTP(email=EmailStr(email), otp=otp, exp=exp)
 
@@ -130,7 +112,7 @@ class AuthController:
         if not auth and error:
             return error
 
-        (new_token, refresh_token) = self.generateToken(auth)
+        (new_token, refresh_token) = self.generate_token(auth)
 
         return JWTRefreshResponse(
             status=HTTPStatus.OK,
@@ -189,7 +171,7 @@ class AuthController:
                 status=400, errmsg="email/password wrong", success=False
             )
 
-        (token, refresh) = self.generateToken(auth.dict(exclude={"password"}))
+        (token, refresh) = self.generate_token(auth.dict(exclude={"password"}))
 
         if token == "":
             return ErrorResponse(
@@ -207,21 +189,21 @@ class AuthController:
             refresh=refresh,
         )
 
-    def generateToken(self, payload: dict[str, Any]) -> Tuple[str, str]:
+    def generate_token(self, payload: dict[str, Any]) -> Tuple[str, str]:
         """Generate a pair of JWT Token."""
-        payload["exp"] = datetime.now() + timedelta(days=1)
+        payload["exp"] = datetime.now() + self.config.token_expiry
 
-        key = ""
-        if "SECRET_KEY" in self.config:
-            key = self.config["SECRET_KEY"]
-        else:
-            return ("", "")
+        key = self.config.secret_key
 
-        token = jwt.encode(payload=payload, key=key, algorithm="HS256")
+        token = jwt.encode(
+            payload=payload, key=key, algorithm=self.config.jwt_algorithm
+        )
 
-        payload["exp"] = datetime.now() + timedelta(days=7)
+        payload["exp"] = datetime.now() + self.config.refresh_expiry
 
-        refresh = jwt.encode(payload=payload, key=key, algorithm="HS256")
+        refresh = jwt.encode(
+            payload=payload, key=key, algorithm=self.config.jwt_algorithm
+        )
 
         return (token, refresh)
 
@@ -231,7 +213,9 @@ class AuthController:
         decoded = None
 
         try:
-            decoded = jwt.decode(token, self.config["SECRET_KEY"], algorithms=["HS256"])
+            decoded = jwt.decode(
+                token, self.config.secret_key, algorithms=self.config.jwt_algorithms
+            )
         except jwt.ExpiredSignatureError:
             return TokenResponse(
                 confirmed=False,

@@ -32,9 +32,10 @@ isort = "^5.11.3"
 
 [tool.poe.tasks]
 test = "pytest"
-run = "python -m placy"
+run = ["doc", { shell = "python -m placy"}]
 format = [ { shell = "black placy tests"}]
 init = [ { shell = "poetry install"} , { shell = "poetry run pre-commit install"} , { shell = "poetry run pre-commit "} ]
+doc = "pdoc -o docs placy"
 
 [build-system]
 requires = ["poetry-core"]

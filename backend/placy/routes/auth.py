@@ -52,20 +52,6 @@ def setupAuthRoutes(app: FastAPI, controller: AuthController) -> None:
         temp.status_code = response.status
         return response
 
-    # @app.put(
-    #     "/auth/profile",
-    #     response_model=ErrorResponse,
-    #     response_description="Update the user's profile.",
-    # )
-    # def profile(
-    #     temp: Response,
-    #     profile: Profile,
-    #     authorization: str | None = Header(default=None),
-    # ):
-    #     response = controller.profile(profile, authorization)
-    #     temp.status_code = response.status
-    #     return response
-
     @app.post("/auth/reset")
     def reset(update: PasswordUpdate, temp: Response):
         response = controller.reset(update)

@@ -1,13 +1,14 @@
 """Module for conducting Email Services."""
 
 import sendgrid
+from placy.services.config import Config
 from sendgrid.helpers.mail import Content, Email, Mail
 
 
 class EmailService:
     """Superclass for Email Service."""
 
-    def __init__(self, config: dict[str, str]):
+    def __init__(self, config: Config):
         """Construct a email Service."""
         self.config = config
 
@@ -20,7 +21,7 @@ class EmailService:
 class SendGridService(EmailService):
     """Subclass for emailing using SendGrid."""
 
-    def __init__(self, config: dict[str, str]):
+    def __init__(self, config: Config):
         """Construct SendGridService class."""
         super().__init__(config)
 
