@@ -264,7 +264,7 @@ requirements-deprecated-finder = ["pip-api", "pipreqs"]
 name = "jinja2"
 version = "3.1.2"
 description = "A very fast and expressive template engine."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 
@@ -278,7 +278,7 @@ i18n = ["Babel (>=2.7)"]
 name = "markupsafe"
 version = "2.1.1"
 description = "Safely add untrusted strings to HTML/XML markup."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 
@@ -346,7 +346,7 @@ python-versions = ">=3.7"
 name = "pdoc"
 version = "12.3.0"
 description = "API Documentation for Python Projects"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 
@@ -431,7 +431,7 @@ toml = ["toml"]
 name = "pygments"
 version = "2.13.0"
 description = "Pygments is a syntax highlighting package written in Python."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 
@@ -673,7 +673,7 @@ testing = ["coverage (>=6.2)", "coverage-enable-subprocess (>=1)", "flaky (>=3.7
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "9d5c37c717740ce5396590a4363cab85690388b1d3ba46b759324b3c27659dd7"
+content-hash = "7f59874b6a505b36a59e66adee80290c3b1ad45466f28e06a871686212c6e987"
 
 [metadata.files]
 anyio = [

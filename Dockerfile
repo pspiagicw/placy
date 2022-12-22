@@ -10,6 +10,6 @@ COPY . /app
 
 WORKDIR /app/backend
 
-RUN pip install poetry poethepoet && poe init
+RUN pip install poetry poethepoet && poe init-simple
 
 CMD ["poe","run"]

@@ -52,7 +52,11 @@ def setupAuthRoutes(app: FastAPI, controller: AuthController) -> None:
         temp.status_code = response.status
         return response
 
-    @app.post("/auth/reset")
+    @app.post(
+        "/auth/reset",
+        response_model=ErrorResponse,
+        response_description="Resets the given user's password if OTP is valid.",
+    )
     def reset(update: PasswordUpdate, temp: Response):
         response = controller.reset(update)
         temp.status_code = response.status
