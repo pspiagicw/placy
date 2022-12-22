@@ -120,7 +120,11 @@ class AuthController:
         (new_token, refresh_token) = self.generateToken(auth)
 
         return JWTRefreshResponse(
-            status=HTTPStatus.OK, success=True, token=new_token, refresh=refresh_token
+            status=HTTPStatus.OK,
+            success=True,
+            token=new_token,
+            refresh=refresh_token,
+            errmsg="",
         )
 
     def signup(self, auth: Auth) -> AuthResponse | ErrorResponse:
@@ -138,7 +142,10 @@ class AuthController:
 
         db_response = self.db.add_user(user)
 
-        if db_response.status != HTTPStatus.OK:
+        if (
+            db_response.status != HTTPStatus.OK
+            and db_response.status != HTTPStatus.CREATED
+        ):
             return ErrorResponse(
                 status=db_response.status,
                 success=False,
@@ -146,7 +153,12 @@ class AuthController:
             )
 
         return AuthResponse(
-            status=200, success=True, error=None, payload=auth, token=None, refresh=None
+            status=db_response.status,
+            success=True,
+            error=None,
+            payload=auth,
+            token=None,
+            refresh=None,
         )
 
     def login(self, auth: Auth) -> AuthResponse | ErrorResponse:

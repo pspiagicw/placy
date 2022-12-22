@@ -54,8 +54,8 @@ client = TestClient(app)
 def assertSignUp(user: dict[str, str]):
     """Assert signup is working and possible."""
     response = client.post("/auth/signup", json=user)
-    assert response.status_code == 200, "Status code not 200."
-    assert response.json()["success"], "Request not a success."
+    assert response.status_code == 201, "Status code not 200."
+    assert response.json()["success"], response.json()
 
 
 def assertLogin(user: dict[str, str]) -> str:
@@ -172,25 +172,6 @@ def test_reset_password():
     assert response.status_code == 200, "Response not a success"
 
 
-def test_add_profile():
-    """Test adding profile to user."""
-    user = generate_user()
-
-    assertSignUp(user)
-
-    token = assertLogin(user)
-
-    profile = generate_profile()
-
-    response = client.put(
-        "/auth/profile", headers={"Authorization": f"Bearer {token}"}, json=profile
-    )
-
-    json_response = response.json()
-    assert response.status_code == 200, json_response["errmsg"]
-    assert json_response["success"], "Updation was not successfull."
-
-
 def generate_user() -> dict[str, str]:
     """Generate a fake user for testing."""
     faker = Faker()
@@ -202,19 +183,3 @@ def generate_user() -> dict[str, str]:
     }
 
     return user_payload
-
-
-def generate_profile() -> dict[str, Any]:
-    """Generate fake profile for user while testing."""
-    faker = Faker()
-
-    profile_payload = {
-        "name": faker.name(),
-        "year": random.randint(1, 5),
-        "gpa": random.randint(1, 10),
-        "communities": [],
-        "reputation": 0.0,
-        "isBanned": False,
-    }
-
-    return profile_payload

@@ -9,6 +9,7 @@ class JWTRefreshResponse(BaseModel):
     status: int
     success: bool
     token: str
+    errmsg: str
     refresh: str
 
 
