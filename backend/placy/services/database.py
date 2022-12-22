@@ -184,7 +184,7 @@ class MongoService(DatabaseService):
             )
 
         if response.id:
-            return DatabaseResponse(data=id, errmsg="", status=HTTPStatus.CREATED)
+            return DatabaseResponse(data=id, errmsg="", status=HTTPStatus.NO_CONTENT)
         else:
             return DatabaseResponse(
                 data="",

@@ -169,7 +169,11 @@ def test_reset_password():
     response = client.post("/auth/reset", json=update_password)
 
     assert json_response["success"], json_response["errmsg"]
-    assert response.status_code == 200, "Response not a success"
+    assert response.status_code == 204, "Response not a success"
+
+    user["password"] = "something_new"
+
+    assertLogin(user)
 
 
 def generate_user() -> dict[str, str]:

@@ -95,7 +95,7 @@ class AuthController:
         if id == "":
             return ErrorResponse(success=False, errmsg=errmsg, status=status_code)
 
-        # self.email.send_email(email, otp.otp)
+        self.email.send_email(email, str(otp.otp))
 
         return ErrorResponse(success=True, errmsg="null", status=HTTPStatus.OK)
 
