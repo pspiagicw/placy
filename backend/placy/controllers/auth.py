@@ -7,6 +7,7 @@ from http import HTTPStatus
 from typing import Any, Tuple
 
 import jwt
+from fastapi import BackgroundTasks
 from mongoengine.fields import dateutil
 from passlib.hash import pbkdf2_sha256
 from placy.models.auth import Auth, PasswordUpdate
@@ -28,7 +29,13 @@ TokenResponse = namedtuple("TokenResponse", ["confirmed", "error"])
 class AuthController:
     """Router handles all routing."""
 
-    def __init__(self, db: DatabaseService, config: Config, email: EmailService):
+    def __init__(
+        self,
+        db: DatabaseService,
+        config: Config,
+        email: EmailService,
+        logging: LoggingService,
+    ):
         """Construct the Router class."""
         self.db = db
         self.config = config
@@ -81,7 +88,7 @@ class AuthController:
 
         return ErrorResponse(status=result.status, errmsg="", success=True)
 
-    def forgot(self, email: EmailStr) -> ErrorResponse:
+    def forgot(self, email: EmailStr, background: BackgroundTasks) -> ErrorResponse:
         """Route to handle forgot password requests."""
         otp = self.generate_otp(email)
 
@@ -90,7 +97,7 @@ class AuthController:
         if id == "":
             return ErrorResponse(success=False, errmsg=errmsg, status=status_code)
 
-        self.email.send_email(email, str(otp.otp))
+        background.add_task(self.email.send_email, email, str(otp.otp))
 
         return ErrorResponse(success=True, errmsg="null", status=HTTPStatus.OK)
 

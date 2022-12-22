@@ -27,3 +27,4 @@ class Config:
         self.refresh_expiry = timedelta(days=7)
         self.jwt_algorithms = ["HS256"]
         self.jwt_algorithm = "HS256"
+        self.log_file = "production.log"

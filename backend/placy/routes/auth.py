@@ -1,6 +1,6 @@
 """Configure routes for authentication."""
 
-from fastapi import FastAPI, Header, Response
+from fastapi import BackgroundTasks, FastAPI, Header, Response
 from placy.controllers.auth import AuthController
 from placy.models.auth import Auth, PasswordUpdate
 from placy.models.response import AuthResponse, ErrorResponse, JWTRefreshResponse
@@ -47,8 +47,8 @@ def setupAuthRoutes(app: FastAPI, controller: AuthController) -> None:
         response_model=ErrorResponse,
         response_description="Allows user to request forgot password.",
     )
-    def forgot(email: EmailStr, temp: Response):
-        response = controller.forgot(email)
+    def forgot(email: EmailStr, temp: Response, background_task: BackgroundTasks):
+        response = controller.forgot(email, background_task)
         temp.status_code = response.status
         return response
 
@@ -58,6 +58,6 @@ def setupAuthRoutes(app: FastAPI, controller: AuthController) -> None:
         response_description="Resets the given user's password if OTP is valid.",
     )
     def reset(update: PasswordUpdate, temp: Response):
-        response = controller.reset(update)
+        response = controller.reset(update, background_task)
         temp.status_code = response.status
         return response

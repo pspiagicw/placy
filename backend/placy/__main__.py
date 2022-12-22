@@ -14,13 +14,13 @@ if __name__ == "__main__":
     app = FastAPI()
     env = dotenv_values()
     config = Config(
-        mongo_uri=env["MONGO_URI"],
-        sendgrid_api_key=env["SENDGRID_API_KEY"],
+        mongo_uri=env["MONGO_URI"] if "MONGO_URI" in env else "",
+        sendgrid_api_key=env["SENDGRID_API_KEY"] if "SENDGRID_API_KEY" in env else "",
     )
-    database = MongoService()
-    email = SendGridService(config)
-    router = AuthController(database, config, email=email)
-    logger = DefaultLogger()
+    logger = DefaultLogger(config)
+    database = MongoService(logger)
+    email = SendGridService(config, logger)
+    router = AuthController(database, config, email=email, logging=logger)
     placy = Placy(
         app=app,
         databaseService=database,

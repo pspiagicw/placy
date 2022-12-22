@@ -35,8 +35,8 @@ class Placy:
 
     def setup(self) -> None:
         """Perform initialization for backend application."""
-        self.db_service.setup(self.config)
-        self.logging_service.setup(self.config)
+        self.db_service.setup()
+        self.logging_service.setup()
 
     def routes(self) -> None:
         """Route all requests."""

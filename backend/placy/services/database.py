@@ -10,6 +10,7 @@ from mongoengine.errors import NotUniqueError
 from placy.models.auth import PasswordUpdate
 from placy.models.auth_orm import OTP, User
 from placy.services.config import Config
+from placy.services.logging import LoggingService
 
 DatabaseResponse = namedtuple("DatabaseResponse", ["data", "errmsg", "status"])
 
@@ -21,7 +22,7 @@ class DatabaseService:
         """Construct Database Service class."""
         pass
 
-    def setup(self, config: Config) -> None:
+    def setup(self) -> None:
         """Initialize connection to database."""
         print(config)
         pass
@@ -61,12 +62,12 @@ class DatabaseService:
 class MongoService(DatabaseService):
     """Implemented subclass to manage connection with MongoDB."""
 
-    def __init__(self):
+    def __init__(self, logger: LoggingService):
         """Construct the Mongo Service class."""
-        self.client = None
+        self.logger = logger
         super().__init__()
 
-    def setup(self, config: Config) -> None:
+    def setup(self) -> None:
         """Connect to MongoDB."""
         connect(db="placy")
 
