@@ -138,7 +138,7 @@ class AuthController:
 
         db_response = self.db.add_user(user)
 
-        if db_response.status == HTTPStatus.OK:
+        if db_response.status != HTTPStatus.OK:
             return ErrorResponse(
                 status=db_response.status,
                 success=False,
