@@ -46,9 +46,7 @@ class DatabaseService:
         print(email)
         return None
 
-    def update_user_password(
-        self, email: str, password: str, salt: str
-    ) -> DatabaseResponse:
+    def update_user_password(self, email: str, password: str) -> DatabaseResponse:
         """Update given user's password."""
         print(email)
         print(password)
@@ -160,9 +158,7 @@ class MongoService(DatabaseService):
 
         return result
 
-    def update_user_password(
-        self, email: str, password: str, salt: str
-    ) -> DatabaseResponse:
+    def update_user_password(self, email: str, password: str) -> DatabaseResponse:
         """Update given user's password."""
         user = self.search_user(email)
 
@@ -172,7 +168,6 @@ class MongoService(DatabaseService):
             )
 
         user.password = password
-        user.salt = salt
 
         response = None
 

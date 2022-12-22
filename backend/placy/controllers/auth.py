@@ -1,5 +1,7 @@
 """Module has controllers for Authentication."""
 
+import hashlib
+import os
 import random
 from collections import namedtuple
 from datetime import datetime, timedelta
@@ -9,6 +11,7 @@ from typing import Any, Tuple
 import jwt
 from fastapi.encoders import jsonable_encoder
 from mongoengine.fields import dateutil
+from passlib.hash import pbkdf2_sha256
 from placy.models.auth import Auth, PasswordUpdate
 from placy.models.auth_orm import OTP, User
 from placy.models.response import (
@@ -35,16 +38,28 @@ class AuthController:
         self.config = config
         self.email = email
 
-    def generate_hash(self, password: str) -> Tuple[str, str]:
+    def generate_hash(self, password: str) -> str:
         """Generate a hash and the salt to store."""
-        salt = "".join([str(random.randint(0, 9)) for _ in range(6)])
-        hash = password + salt
+        # salt = "".join([str(random.randint(0, 9)) for _ in range(6)])
+        # hash = password + salt
+        # salt = os.urandom(16)
+        # hash = hashlib.scrypt(password=password.encode('base64'), salt=salt,n=32,r=8,p=1)
+        hash = pbkdf2_sha256.hash(password)
 
-        return (salt, hash)
+        # salt = hash.decode('base64')
+        # hash = hash.decode('base64')
 
-    def comparePasswords(self, givenPass: str, actualPass: str, salt: str) -> bool:
+        return hash
+
+    def comparePasswords(self, hashedPass: str, givenPass: str) -> bool:
         """Compare passwords."""
-        return givenPass + salt == actualPass
+        # return givenPass + salt == actualPass
+        # hash = hashlib.scrypt(password=givenPass.encode('base64'), salt=salt.encode('base64'), n=32, r=8, p=1)
+        #
+        # hash = hash.decode()
+        #
+        # return hash == actualPass
+        return pbkdf2_sha256.verify(givenPass, hashedPass)
 
     def generate_otp(self, email: str) -> OTP:
         """Generate a OTP instance."""
@@ -73,11 +88,9 @@ class AuthController:
                 status=HTTPStatus.BAD_REQUEST, success=False, errmsg="OTP has expired."
             )
 
-        (salt, hash) = self.generate_hash(update.new_password)
+        hash = self.generate_hash(update.new_password)
 
-        result = self.db.update_user_password(
-            email=update.email, password=hash, salt=salt
-        )
+        result = self.db.update_user_password(email=update.email, password=hash)
 
         if result.status != HTTPStatus.OK:
             return ErrorResponse(
@@ -129,7 +142,7 @@ class AuthController:
 
     def signup(self, auth: Auth) -> AuthResponse | ErrorResponse:
         """Route to handle user signup."""
-        (salt, hash_password) = self.generate_hash(auth.password)
+        hash_password = self.generate_hash(auth.password)
 
         user = User(
             email=auth.email,
@@ -137,7 +150,6 @@ class AuthController:
             password=hash_password,
             created_at=datetime.now(),
             updated_at=datetime.now(),
-            salt=salt,
         )
 
         db_response = self.db.add_user(user)
@@ -171,9 +183,7 @@ class AuthController:
             )
 
         if not self.comparePasswords(
-            givenPass=auth.password,
-            actualPass=foundUser.password,
-            salt=foundUser.salt,
+            hashedPass=str(foundUser.password), givenPass=auth.password
         ):
             return ErrorResponse(
                 status=400, errmsg="email/password wrong", success=False

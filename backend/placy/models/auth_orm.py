@@ -10,7 +10,6 @@ class User(Document):
     email = EmailField(required=True, unique=True)
     username = StringField(required=True, unique=True)
     role = StringField(default="user")
-    salt = StringField(required=True)
 
     created_at = DateTimeField(required=True)
     updated_at = DateTimeField(required=True)
