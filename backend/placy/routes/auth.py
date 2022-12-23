@@ -58,6 +58,6 @@ def setupAuthRoutes(app: FastAPI, controller: AuthController) -> None:
         response_description="Resets the given user's password if OTP is valid.",
     )
     def reset(update: PasswordUpdate, temp: Response):
-        response = controller.reset(update, background_task)
+        response = controller.reset(update)
         temp.status_code = response.status
         return response

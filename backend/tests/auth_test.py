@@ -36,10 +36,10 @@ env = {
     "SENDGRID_API_KEY": "somethingfake",
 }
 config = Config(mongo_uri=env["MONGO_URI"], sendgrid_api_key=env["SENDGRID_API_KEY"])
-database = MongoService()
+logger = DefaultLogger(config)
+database = MongoService(logger)
 email = MockEmailService(config)
-authController = AuthController(database, config, email)
-logger = DefaultLogger()
+authController = AuthController(database, config, email, logging=logger)
 placy = Placy(
     app=app,
     databaseService=database,

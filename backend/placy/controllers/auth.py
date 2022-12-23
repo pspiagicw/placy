@@ -21,6 +21,7 @@ from placy.models.response import (
 from placy.services.config import Config
 from placy.services.database import DatabaseService
 from placy.services.email import EmailService
+from placy.services.logging import LoggingService
 from pydantic import EmailStr
 
 TokenResponse = namedtuple("TokenResponse", ["confirmed", "error"])
@@ -40,10 +41,12 @@ class AuthController:
         self.db = db
         self.config = config
         self.email = email
+        self.logger = logging
 
     def generate_hash(self, password: str) -> str:
         """Generate a hash and the salt to store."""
         hash = pbkdf2_sha256.hash(password)
+        self.logger.log_info("Password hash generated.")
         return hash
 
     def comparePasswords(self, hashedPass: str, givenPass: str) -> bool:
@@ -53,10 +56,12 @@ class AuthController:
     def generate_otp(self, email: str) -> OTP:
         """Generate a OTP instance."""
         otp = "".join([str(random.randint(0, 9)) for _ in range(6)])
+        self.logger.log_info("Generated a OTP.")
 
         exp = datetime.now() + self.config.otp_expiry
 
         instance = OTP(email=EmailStr(email), otp=otp, exp=exp)
+        self.logger.log_info("Generated a OTP instance.")
 
         return instance
 
@@ -64,7 +69,10 @@ class AuthController:
         """Route to handle reset password requests."""
         otp = self.db.search_otp(update.email)
 
+        self.logger.log_info(f"Searched for a otp belonging to: {update.email}")
+
         if otp == None:
+            self.logger.log_info(f"OTP not found for user: {update.email}")
             return ErrorResponse(
                 status=HTTPStatus.BAD_REQUEST, success=False, errmsg="OTP not found."
             )
@@ -73,53 +81,72 @@ class AuthController:
         exp = dateutil.parser.parse(str(otp.exp))
 
         if exp < now:
+            self.logger.log_info(f"OTP for user: {update.email}, hash expired.")
             return ErrorResponse(
                 status=HTTPStatus.BAD_REQUEST, success=False, errmsg="OTP has expired."
             )
 
+        self.logger.log_info(f"OTP for user: {update.email} is valid!")
         hash = self.generate_hash(update.new_password)
 
+        self.logger.log_info(f"Updating user password for: {update.email}")
         result = self.db.update_user_password(email=update.email, password=hash)
 
         if result.status != HTTPStatus.OK:
+            self.logger.log_error(
+                f"Error while updating user password for user: {update.email}"
+            )
             return ErrorResponse(
                 status=result.status, errmsg=result.errmsg, success=False
             )
 
+        self.logger.log_info(
+            f"Password for user: {update.email}, was updated successfully!"
+        )
         return ErrorResponse(status=result.status, errmsg="", success=True)
 
     def forgot(self, email: EmailStr, background: BackgroundTasks) -> ErrorResponse:
         """Route to handle forgot password requests."""
         otp = self.generate_otp(email)
+        self.logger.log_info(f"Generated a OTP for user {email}")
 
         (id, errmsg, status_code) = self.db.add_otp(otp)
 
         if id == "":
+            self.logger.log_error("Error adding OTP to the database.")
             return ErrorResponse(success=False, errmsg=errmsg, status=status_code)
 
+        self.logger.log_info("Starting background task for sending email.")
         background.add_task(self.email.send_email, email, str(otp.otp))
 
         return ErrorResponse(success=True, errmsg="null", status=HTTPStatus.OK)
 
     def checkhealth(self, status: str):
         """Route to handle health request."""
+        self.logger.log_info("Server is online!!")
         return Health(status="OK", version=0.1)
 
     def refresh(self, token_header: str | None) -> ErrorResponse | JWTRefreshResponse:
         """Route to handle JWT Token refresh."""
         if token_header == None:
+            self.logger.log_warning("Request did not have JWT token.")
             return ErrorResponse(
                 status=HTTPStatus.UNAUTHORIZED,
                 success=False,
                 errmsg="No authorization header.",
             )
+        self.logger.log_info("Request had JWT token.")
 
         (auth, error) = self.decodeToken(token_header=token_header)
 
+        self.logger.log_info("JWT token decoded.")
+
         if not auth and error:
+            self.logger.log_error("Error decoding JWT token.")
             return error
 
         (new_token, refresh_token) = self.generate_token(auth)
+        self.logger.log_error("New JWT token pair generated.")
 
         return JWTRefreshResponse(
             status=HTTPStatus.OK,
