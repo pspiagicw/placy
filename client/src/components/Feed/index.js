@@ -1,12 +1,27 @@
-import { FlatList, StyleSheet, Text, View, Image, TouchableOpacity, Platform } from 'react-native'
-import React from 'react'
+import { FlatList, StyleSheet, Text, View, Image, TouchableOpacity, Platform, Modal } from 'react-native'
+import React, { useState } from 'react'
 import { Entypo, Ionicons } from '@expo/vector-icons'
 import colors from '../../theme/colors'
 import Scrollbars from 'react-custom-scrollbars'
+import ImageViewer from 'react-native-image-zoom-viewer'
 
 const Feed = (props) => {
-    const renderPost = ({ item }) => (
-        <View style={postStyles.container}>
+
+    const [imageZoomStatus, setImageZoomStatus] = useState({ id: '', isOpen: false })
+
+    const renderPost = ({ item }) => {
+
+        const openModal = () =>
+            setImageZoomStatus({ id: item.id, isOpen: true })
+
+
+        const closeModal = () =>
+            setImageZoomStatus(prev => ({ ...prev, isOpen: false }))
+
+
+        const isModalVisible = (imageZoomStatus.id == item.id && imageZoomStatus.isOpen)
+
+        return <View style={postStyles.container}>
             <View style={postStyles.headerContainer}>
                 <Image style={postStyles.profilePhoto} source={{ uri: item.user.profilePhotoUrl }} />
                 <View style={postStyles.infoContainer}>
@@ -19,7 +34,22 @@ const Feed = (props) => {
             </View>
             <View style={postStyles.post}>
                 <Text>{item.post}</Text>
-                <Image style={postStyles.image} source={{ uri: item.photoUrl }} />
+                <TouchableOpacity onPress={openModal}>
+                    <Image style={postStyles.image} source={{ uri: item.photoUrl }} />
+                </TouchableOpacity>
+                <Modal visible={isModalVisible} transparent={true} onRequestClose={closeModal}>
+                    <ImageViewer
+                        imageUrls={[{ url: item.photoUrl }]}
+                        onShowModal={openModal}
+                        onCancel={closeModal}
+                        enableSwipeDown={true}
+                        saveToLocalByLongPress={false}
+                        renderIndicator={() => null}
+                        renderHeader={() => <View style={zoomedImageStyles.headerContainer}><Text style={zoomedImageStyles.text}>{item.user.username}</Text></View>}
+                        renderFooter={() => <View><Text style={zoomedImageStyles.text}>{item.post}</Text></View>}
+                        menus={() => null}
+                    />
+                </Modal>
                 <View style={postStyles.details}>
                     <View style={postStyles.likes}>
                         <TouchableOpacity>
@@ -36,7 +66,8 @@ const Feed = (props) => {
                 </View>
             </View>
         </View>
-    )
+
+    }
 
     return (
         <View style={postStyles.Container}>
@@ -106,4 +137,20 @@ const postStyles = StyleSheet.create({
         alignItems: 'center',
         marginLeft: 16
     }
+})
+
+const zoomedImageStyles = StyleSheet.create({
+    headerContainer: {
+        position: 'absolute',
+        width: '100%',
+        top: 20
+    },
+    text: {
+        color: 'white',
+        textAlign: 'center',
+        textShadowColor: 'black',
+        textShadowOffset: { width: 5, height: 5 },
+        textShadowRadius: 10,
+    }
+
 })
