@@ -1,25 +1,28 @@
 """Module to run backend."""
 
-from placy.database import MongoService
-from placy.placy import Placy
-from fastapi import FastAPI
 from dotenv import dotenv_values
-from placy.routes import Router
-from placy.logging import DefaultLogger
+from fastapi import FastAPI
+from placy.controllers.auth import AuthController
+from placy.services.database import MongoService
+from placy.services.email import SendGridService
+from placy.services.logging import DefaultLogger
 
+from placy.placy import Placy
 
 if __name__ == "__main__":
     app = FastAPI()
     config = dotenv_values()
     database = MongoService()
-    router = Router(database, config)
+    email = SendGridService(config)
+    router = AuthController(database, config, email=email)
     logger = DefaultLogger()
     placy = Placy(
         app=app,
         databaseService=database,
         loggingService=logger,
         config=config,
-        router=router,
+        authController=router,
+        emailService=email,
     )
     placy.setup()
     placy.routes()
