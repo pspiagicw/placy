@@ -17,7 +17,7 @@ const Discover = () => {
 
     const dispatch = useDispatch();
 
-    return (<View>
+    return (<View style={{ flex: 1 }}>
         <Feed feedData={feedData} />
         <Text>token from store {authService.token}</Text>
         <Text>token from storage {tokenFromStorage}</Text>
