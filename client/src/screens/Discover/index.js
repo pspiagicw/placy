@@ -7,6 +7,8 @@ import { Button } from 'react-native-paper';
 import useAuthService from '../../hooks/api/authService';
 import Feed from '../../components/Feed';
 
+import feedData from '../../dummy-data/feedData'
+
 const Discover = () => {
 
     const authService = useAuthService();
@@ -16,9 +18,7 @@ const Discover = () => {
     const dispatch = useDispatch();
 
     return (<View>
-        <Feed />
-        <Feed />
-        <Feed />
+        <Feed feedData={feedData} />
         <Text>token from store {authService.token}</Text>
         <Text>token from storage {tokenFromStorage}</Text>
         <Button onPress={() => dispatch(logoutUser())}><Text>Logout</Text></Button>
