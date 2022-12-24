@@ -44,8 +44,7 @@ const Feed = (props) => {
                         onCancel={closeModal}
                         enableSwipeDown={true}
                         saveToLocalByLongPress={false}
-                        renderIndicator={() => null}
-                        renderHeader={() => <View style={zoomedImageStyles.headerContainer}><Text style={zoomedImageStyles.text}>{item.user.username}</Text></View>}
+                        renderIndicator={() => <View style={zoomedImageStyles.headerContainer}><Text style={zoomedImageStyles.text}>{item.user.username}</Text></View>}
                         renderFooter={() => <View><Text style={zoomedImageStyles.text}>{item.post}</Text></View>}
                         menus={() => null}
                     />
