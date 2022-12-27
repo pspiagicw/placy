@@ -1,70 +1,66 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Image, StyleSheet, Text, TouchableOpacity, View, ScrollView, FlatList, Dimensions } from 'react-native'
-import { Entypo, Ionicons } from '@expo/vector-icons'
+import { AntDesign, Entypo, Ionicons, MaterialIcons } from '@expo/vector-icons'
 import colors from '../../theme/colors'
 import Scrollbars from 'react-custom-scrollbars'
+import useAuthService from '../../hooks/api/authService'
+import { useSelector } from 'react-redux'
+import HoverableOpacity from '../../components/HoverableOpacity'
 
-const Tab = ({ name, icon, onPress = () => { }, styles }) => {
-  return <TouchableOpacity onPress={onPress} activeOpacity={0.7} style={{ backgroundColor: 'yellow', height: 50, marginVertical: 10, alignItems: 'center', flexDirection: 'row', ...styles }}>
-    {icon}
-    <Text style={{ marginLeft: 10 }} >{name}</Text>
-  </TouchableOpacity>
+const RenderCommunityItem = ({ item }) => {
+
+  return <HoverableOpacity activeOpacity={0.7} hoverStyle={{ backgroundColor: colors.primary, borderRadius: 10 }} outerStyle={{}} onPress={item.onPress} style={{ flexDirection: 'row', marginLeft: 20, height: 50, alignItems: 'center', }}>
+    {(typeof item.icon !== "string") ? (item.icon)() : <Image source={{ uri: item.icon }} style={{ height: '90%', aspectRatio: 1 }} />}
+    <Text style={{ textTransform: 'uppercase', marginLeft: 20, fontSize: 16 }}>{item.title}</Text>
+  </HoverableOpacity>
 }
 
-const CommunityContainer = () => {
-  const communities = [
-    { name: "Internships", id: 1, onPress: () => { }, image: "https://winaero.com/blog/wp-content/uploads/2019/11/Photos-new-icon.png" },
-    { name: "Previously asked questions", id: 2, onPress: () => { }, image: "https://winaero.com/blog/wp-content/uploads/2019/11/Photos-new-icon.png" },
-    { name: "Previously asked questions", id: 3, onPress: () => { }, image: "https://winaero.com/blog/wp-content/uploads/2019/11/Photos-new-icon.png" },
-    { name: "Previously asked questions", id: 4, onPress: () => { }, image: "https://winaero.com/blog/wp-content/uploads/2019/11/Photos-new-icon.png" },
-    { name: "Previously asked questions", id: 5, onPress: () => { }, image: "https://winaero.com/blog/wp-content/uploads/2019/11/Photos-new-icon.png" },
-    { name: "Previously asked questions", id: 6, onPress: () => { }, image: "https://winaero.com/blog/wp-content/uploads/2019/11/Photos-new-icon.png" },
-    { name: "Previously asked questions", id: 7, onPress: () => { }, image: "https://winaero.com/blog/wp-content/uploads/2019/11/Photos-new-icon.png" },
-    { name: "Previously asked questions", id: 8, onPress: () => { }, image: "https://winaero.com/blog/wp-content/uploads/2019/11/Photos-new-icon.png" },
-    { name: "Previously asked questions 9", id: 9, onPress: () => { }, image: "https://winaero.com/blog/wp-content/uploads/2019/11/Photos-new-icon.png" },
-    { name: "Previously asked questions", id: 10, onPress: () => { }, image: "https://winaero.com/blog/wp-content/uploads/2019/11/Photos-new-icon.png" },
-    { name: "Previously asked questions", id: 11, onPress: () => { }, image: "https://winaero.com/blog/wp-content/uploads/2019/11/Photos-new-icon.png" },
-    { name: "Previously asked questions", id: 12, onPress: () => { }, image: "https://winaero.com/blog/wp-content/uploads/2019/11/Photos-new-icon.png" },
-    { name: "Previously asked questions 13", id: 13, onPress: () => { }, image: "https://winaero.com/blog/wp-content/uploads/2019/11/Photos-new-icon.png" },
-  ];
+const LeftSidebar = ({ navigation }) => {
+  const initialList = [
+    { id: 0, title: "Announcements", onPress: () => { navigation.navigate('Announcement') }, icon: () => <Entypo name="megaphone" size={24} color='black' /> },
+    { id: 1, title: "Settings", onPress: () => { navigation.navigate('Settings') }, icon: () => <Ionicons name="settings" size={24} color='black' /> },
+  ]
 
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [communities, setCommunities] = useState(initialList)
+
+  const authService = useAuthService();
+  const user = useSelector(state => state.auth.user)
+
+  const logout = () => {
+    authService.logout()
+  }
 
   return (
-    <View style={{ marginBottom: 10, flex: 1 }}>
-      <View style={{ backgroundColor: 'yellow', height: 50, alignItems: 'center', flexDirection: 'row', marginTop: 10, }}>
-        <Ionicons name="settings" size={24} color='black' />
-        <Text style={{ marginLeft: 10 }}>Communities</Text>
+    <View style={{ height: '100%', flex: 1, flexDirection: 'column' }}>
+      <View style={{ marginBottom: 20, flexDirection: 'row' }}>
+        <Text style={{ fontWeight: 'bold', fontSize: 24, }}>Auxilium</Text>
       </View>
-      <Scrollbars>
-        <FlatList
-          data={communities}
-          renderItem={({ item }) =>
-            <Tab
-              key={item.id}
-              name={item.name}
-              onPress={item.onPress}
-              styles={{ marginLeft: 10, marginVertical: 0, marginTop: 10, }}
-              icon={<Image source={{ uri: item.image }} style={{ height: 24, width: 24, }} />}
-            />}
-          keyExtractor={item => item.id}
-        />
-      </Scrollbars>
-    </View>)
-}
-
-
-const LeftSidebar = () => {
-  return (
-    <View style={{ backgroundColor: "red", height: '100%' }}>
-      <View>
-        <Tab name="Announcements" icon={<Entypo name="megaphone" size={24} color="black" />} />
-        <Tab name="Settings" icon={<Ionicons name="settings" size={24} color='black' />} />
+      <View style={{ flex: 1, }}>
+        <Scrollbars>
+          <FlatList style={{
+            flex: 1
+          }} data={communities} renderItem={RenderCommunityItem}
+            keyExtractor={item => item.id}
+          />
+        </Scrollbars>
       </View>
-      <CommunityContainer />
+      <View style={{ bottom: 0, justifyContent: 'flex-end', }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <AntDesign name="user" size={30} color="black" style={{ marginRight: 20 }} />
+            <View>
+              <Text style={{ fontWeight: '600', fontSize: 18 }}>{user.name ? user.name : "User"}</Text>
+              <Text>{user.graduationYear ?? user.graduationYear}</Text>
+            </View>
+          </View>
+          <TouchableOpacity onPress={logout}>
+            <MaterialIcons name="logout" size={24} color='black' />
+          </TouchableOpacity>
+        </View>
+      </View>
     </View>
   )
 }
 
 export default LeftSidebar
-
-const styles = StyleSheet.create({})
