@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "placy"
 version = "0.1.0"
-description = "Placement dashboard for Students"
+description = "Placement Dashboard for Students"
 authors = ["pspiagicw <pspiagicw@gmail.com>"]
 license = "MIT"
 readme = "README.md"
@@ -14,6 +14,12 @@ uvicorn = "^0.20.0"
 pymongo = "^4.3.3"
 python-dotenv = "^0.21.0"
 pyjwt = "^2.6.0"
+email-validator = "^1.3.0"
+sendgrid = "^6.9.7"
+mongoengine = "^0.24.2"
+python-dateutil = "^2.8.2"
+passlib = "^1.7.4"
+pdoc = "^12.3.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.12.0"
@@ -23,12 +29,16 @@ pre-commit = "^2.20.0"
 pydocstyle = "^6.1.1"
 toml = "^0.10.2"
 faker = "^15.3.4"
+isort = "^5.11.3"
 
 [tool.poe.tasks]
 test = "pytest"
-run = "python -m placy"
-format = "black placy tests"
+run = ["doc", "execute" ]
+format = [ { shell = "black placy tests"}]
+execute = "python -m placy"
 init = [ { shell = "poetry install"} , { shell = "poetry run pre-commit install"} , { shell = "poetry run pre-commit "} ]
+init-simple = [ { shell = "poetry install --without=dev " } ]
+doc = "pdoc -o docs placy"
 
 [build-system]
 requires = ["poetry-core"]

@@ -44,10 +44,7 @@ const Routes = () => {
     )
 
     const HomeMobileStack = () => {
-        return <Drawer.Navigator drawerContent={props => {
-            const filteredProps = { ...props, state: { ...props.state, routeNames: props.state.routeNames.filter((routeName) => { routeName !== 'Discover' }), routes: props.state.routes.filter((route) => route.name !== "Discover") } }
-            return <CustomDrawer {...filteredProps} />
-        }}>
+        return <Drawer.Navigator drawerContent={props => <CustomDrawer {...props} />}>
             <Drawer.Screen name="Discover" component={Discover} />
             <Drawer.Screen name="Community" component={Community} />
         </Drawer.Navigator>

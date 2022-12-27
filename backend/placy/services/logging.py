@@ -3,11 +3,17 @@
 
 import logging
 
+from placy.services.config import Config
+
 
 class LoggingService:
     """Superclass for injecting Logging as a service into application."""
 
-    def setup(self, config: dict[str, str]) -> None:
+    def __init__(self, config: Config) -> None:
+        """Configure the logger."""
+        self.config = config
+
+    def setup(self) -> None:
         """Initialize logging service."""
 
     def log_info(self, data: str) -> None:
@@ -25,6 +31,14 @@ class LoggingService:
 
 class DefaultLogger(LoggingService):
     """Implemented subclass to manage logging."""
+
+    def __init__(self, config: Config) -> None:
+        """Log to a file.."""
+        super().__init__(config)
+
+    def setup(self) -> None:
+        """Configure the default logger."""
+        logging.basicConfig(filename=self.config.log_file, level=logging.INFO)
 
     def log_info(self, data: str) -> None:
         """Log info onto root logger."""
