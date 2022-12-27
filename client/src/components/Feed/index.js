@@ -92,7 +92,6 @@ const margin = (a, b, c, d) => ({
 const postStyles = StyleSheet.create({
     Container: {
         flex: 1,
-        backgroundColor: '#ebecf3',
     },
     container: {
         ...margin(16, 16, 0, 16),
