@@ -1,7 +1,7 @@
 import { getAuthenticatedAxios, getUnauthenticatedAxios } from "./baseConfig"
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useDispatch, useSelector } from "react-redux"
-import { loginUser, setLoaded, setLoading } from "../../store/reducers/authSlice"
+import { loginUser, logoutUser, setLoaded, setLoading } from "../../store/reducers/authSlice"
 import { useEffect } from "react"
 
 
@@ -23,15 +23,10 @@ const useAuthService = () => {
         }
     }
 
-    const logout = () => { }
-
-    const mockDelayedResolve = (cb, timeout) => {
-        return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                return resolve(cb)
-            }, timeout);
-        })
+    const logout = () => {
+        dispatch(logoutUser())
     }
+
 
     const forgot = async (email) => {
 

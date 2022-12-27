@@ -4,7 +4,6 @@ import { NavigationContainer } from "@react-navigation/native/"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { createDrawerNavigator } from "@react-navigation/drawer";
 import { Text } from "react-native-paper";
 import { useDispatch, useSelector } from "react-redux";
 import { Entypo, Ionicons } from "@expo/vector-icons";
@@ -16,6 +15,7 @@ import VerifyPassword from "../screens/Auth/VerifyPassword";
 import Home from "../screens/HomeWeb";
 import Settings from "../screens/Settings";
 import Announcements from "../screens/Announcements";
+import Post from "../screens/Post";
 
 
 const Routes = () => {
@@ -46,6 +46,7 @@ const Routes = () => {
             <HomeStack.Screen name="Home" component={Home} />
             <HomeStack.Screen name="Announcement" component={Announcements} />
             <HomeStack.Screen name="Settings" component={Settings} />
+            <HomeStack.Screen name="Post" component={Post} />
         </HomeStack.Navigator>
     )
 

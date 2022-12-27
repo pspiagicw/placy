@@ -19,6 +19,7 @@ import VerifyPassword from "../screens/Auth/VerifyPassword";
 import Community from "../screens/Community";
 import Announcements from "../screens/Announcements"
 import Settings from "../screens/Settings"
+import Post from "../screens/Post";
 
 
 const Routes = () => {
@@ -47,24 +48,23 @@ const Routes = () => {
 
     const HomeMobileStack = () => {
         return <Drawer.Navigator drawerContent={props => <CustomDrawer {...props} />}>
+            <Drawer.Screen name="Post" component={Post} options={{headerShown:false}}/>
             <Drawer.Screen name="Discover" component={Discover} />
             <Drawer.Screen name="Community" component={Community} />
         </Drawer.Navigator>
     }
 
-    const Screen = () => <View><Text>index</Text></View>
-
     const TabScreens = () => (
         <Tab.Navigator screenOptions={{
-            tabBarStyle: {
-                position: 'absolute',
-                bottom: 20,
-                left: 20,
-                right: 20,
-                borderRadius: 15,
-                height: 50,
-                ...styles.shadow
-            },
+            // tabBarStyle: {
+            //     position: 'absolute',
+            //     bottom: 20,
+            //     left: 20,
+            //     right: 20,
+            //     borderRadius: 15,
+            //     height: 50,
+            //     ...styles.shadow
+            // },
             tabBarActiveTintColor: colors.primary,
             tabBarInactiveTintColor: colors.secondary
         }}

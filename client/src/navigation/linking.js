@@ -17,6 +17,9 @@ const config = {
         },
         Settings: {
             path: "settings"
+        },
+        Post: {
+            path: "post/:id"
         }
     }
 }
