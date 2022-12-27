@@ -94,7 +94,9 @@ const postStyles = StyleSheet.create({
         flex: 1,
     },
     container: {
-        ...margin(16, 16, 0, 16),
+        marginHorizontal: 16,
+        marginBottom: Platform.OS != 'web' ? 5 : 16,
+        marginTop: Platform.OS != 'web' ? 10 : 0,
         backgroundColor: '#fff',
         borderRadius: 6,
         padding: 8,

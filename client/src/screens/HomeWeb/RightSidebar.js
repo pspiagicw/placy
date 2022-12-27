@@ -1,17 +1,14 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
+import { Calendar } from 'react-calendar'
+import './Calendar.css'
 
-const SearchBar = () => {
-    return <View style={{ height: 50, backgroundColor: 'blue', flexDirection: 'row', alignItems: 'center' }}>
-        <Text>SearchBar</Text>
-    </View>
-}
 const RightSidebar = () => {
 
     return (
-        <View style={{ flex: 1, backgroundColor: "red" }}>
-            <SearchBar />
-            <Text>RightSidebar</Text>
+        <View style={{ flex: 1, alignItems: 'center' }}>
+            <Text style={{ fontWeight: '600', fontSize: 20, marginBottom: 10 }}>Schedule</Text>
+            <Calendar />
         </View>
     )
 }
