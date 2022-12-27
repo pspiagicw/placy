@@ -33,8 +33,9 @@ isort = "^5.11.3"
 
 [tool.poe.tasks]
 test = "pytest"
-run = ["doc", { shell = "python -m placy"}]
+run = ["doc", "execute" ]
 format = [ { shell = "black placy tests"}]
+execute = "python -m placy"
 init = [ { shell = "poetry install"} , { shell = "poetry run pre-commit install"} , { shell = "poetry run pre-commit "} ]
 init-simple = [ { shell = "poetry install --without=dev " } ]
 doc = "pdoc -o docs placy"
