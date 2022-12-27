@@ -1,5 +1,5 @@
 """Module contains models for responses."""
-from placy.models.auth import User
+from placy.models.auth import Auth
 from pydantic import BaseModel
 
 
@@ -9,6 +9,7 @@ class JWTRefreshResponse(BaseModel):
     status: int
     success: bool
     token: str
+    errmsg: str
     refresh: str
 
 
@@ -26,7 +27,7 @@ class AuthResponse(BaseModel):
     status: int
     success: bool
     error: str | None
-    payload: User
+    payload: Auth
     token: str | None
     refresh: str | None
 

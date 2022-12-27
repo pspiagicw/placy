@@ -25,6 +25,7 @@ jobs:
         uses: supercharge/mongodb-github-action@1.8.0
       - name: Ensure documentation
         run: |
+          poetry run pdoc -o docs placy
           poetry run pydocstyle
       - name: Test with pytest
         run: |

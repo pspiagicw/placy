@@ -7,6 +7,7 @@ from faker import Faker
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from placy.controllers.auth import AuthController
+from placy.services.config import Config
 from placy.services.database import MongoService
 from placy.services.email import EmailService
 from placy.services.logging import DefaultLogger
@@ -17,7 +18,7 @@ from placy.placy import Placy
 class MockEmailService(EmailService):
     """Mock sending emails."""
 
-    def __init__(self, config: dict[str, str]):
+    def __init__(self, config: Config):
         """Construct the Mock Emailer."""
         super().__init__(config)
         self.cache = dict()
@@ -29,15 +30,16 @@ class MockEmailService(EmailService):
 
 app = FastAPI()
 # Testing config
-config = {
+env = {
     "SECRET_KEY": "someusefulpassword",
     "MONGO_URI": "mongodb://localhost:27017",
     "SENDGRID_API_KEY": "somethingfake",
 }
-database = MongoService()
+config = Config(mongo_uri=env["MONGO_URI"], sendgrid_api_key=env["SENDGRID_API_KEY"])
+logger = DefaultLogger(config)
+database = MongoService(logger)
 email = MockEmailService(config)
-authController = AuthController(database, config, email)
-logger = DefaultLogger()
+authController = AuthController(database, config, email, logging=logger)
 placy = Placy(
     app=app,
     databaseService=database,
@@ -54,8 +56,8 @@ client = TestClient(app)
 def assertSignUp(user: dict[str, str]):
     """Assert signup is working and possible."""
     response = client.post("/auth/signup", json=user)
-    assert response.status_code == 200, "Status code not 200."
-    assert response.json()["success"], "Request not a success."
+    assert response.status_code == 201, "Status code not 200."
+    assert response.json()["success"], response.json()
 
 
 def assertLogin(user: dict[str, str]) -> str:
@@ -169,26 +171,11 @@ def test_reset_password():
     response = client.post("/auth/reset", json=update_password)
 
     assert json_response["success"], json_response["errmsg"]
-    assert response.status_code == 200, "Response not a success"
+    assert response.status_code == 204, "Response not a success"
 
+    user["password"] = "something_new"
 
-def test_add_profile():
-    """Test adding profile to user."""
-    user = generate_user()
-
-    assertSignUp(user)
-
-    token = assertLogin(user)
-
-    profile = generate_profile()
-
-    response = client.put(
-        "/auth/profile", headers={"Authorization": f"Bearer {token}"}, json=profile
-    )
-
-    json_response = response.json()
-    assert response.status_code == 200, json_response["errmsg"]
-    assert json_response["success"], "Updation was not successfull."
+    assertLogin(user)
 
 
 def generate_user() -> dict[str, str]:
@@ -202,19 +189,3 @@ def generate_user() -> dict[str, str]:
     }
 
     return user_payload
-
-
-def generate_profile() -> dict[str, Any]:
-    """Generate fake profile for user while testing."""
-    faker = Faker()
-
-    profile_payload = {
-        "name": faker.name(),
-        "year": random.randint(1, 5),
-        "gpa": random.randint(1, 10),
-        "communities": [],
-        "reputation": 0.0,
-        "isBanned": False,
-    }
-
-    return profile_payload
