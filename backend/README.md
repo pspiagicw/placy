@@ -49,7 +49,6 @@ Simple
 poe run
 ```
 
-API documentation can be found after starting the application using `make run`, and then accessing `localhost:5000/docs` or `localhost:5000/redocs`.
 
 ## Generate documentation
 
