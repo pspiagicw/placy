@@ -17,6 +17,8 @@ import Discover from "../screens/Discover";
 import ForgotPassword from "../screens/Auth/ForgotPassword";
 import VerifyPassword from "../screens/Auth/VerifyPassword";
 import Community from "../screens/Community";
+import Announcements from "../screens/Announcements"
+import Settings from "../screens/Settings"
 
 
 const Routes = () => {
@@ -73,12 +75,12 @@ const Routes = () => {
                     tabBarIcon: ({ focused }) => <Entypo name="home" size={24} color={focused ? colors.primary : colors.secondary} />
                 }}
             />
-            <Tab.Screen name="Announcement" component={Screen}
+            <Tab.Screen name="Announcement" component={Announcements}
                 options={{
                     title: 'Announcements', tabBarIcon: ({ focused }) =>
                         <Entypo name="megaphone" size={30} color={focused ? colors.primary : colors.secondary} />,
                 }} />
-            <Tab.Screen name="Settings" component={Screen}
+            <Tab.Screen name="Settings" component={Settings}
                 options={{
                     tabBarIcon: ({ focused }) =>
                         <Ionicons name="settings" size={24} color={focused ? colors.primary : colors.secondary} />,

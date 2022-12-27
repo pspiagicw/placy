@@ -6,7 +6,7 @@ import feedData from '../../dummy-data/feedData'
 
 const MainFeed = () => {
     return (
-        <View style={{ flex: 1, backgroundColor: 'yellow' }}>
+        <View style={{ flex: 1, }}>
             <Feed feedData={feedData} />
         </View>
     )

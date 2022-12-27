@@ -14,6 +14,8 @@ import linking from "./linking";
 import ForgotPassword from "../screens/Auth/ForgotPassword";
 import VerifyPassword from "../screens/Auth/VerifyPassword";
 import Home from "../screens/HomeWeb";
+import Settings from "../screens/Settings";
+import Announcements from "../screens/Announcements";
 
 
 const Routes = () => {
@@ -42,6 +44,8 @@ const Routes = () => {
     const HomeWebStackScreens = () => (
         <HomeStack.Navigator screenOptions={{ headerShown: false }}>
             <HomeStack.Screen name="Home" component={Home} />
+            <HomeStack.Screen name="Announcement" component={Announcements} />
+            <HomeStack.Screen name="Settings" component={Settings} />
         </HomeStack.Navigator>
     )
 
