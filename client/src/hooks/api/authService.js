@@ -27,13 +27,6 @@ const useAuthService = () => {
         dispatch(logoutUser())
     }
 
-    const mockDelayedResolve = (cb, timeout) => {
-        return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                return resolve(cb)
-            }, timeout);
-        })
-    }
 
     const forgot = async (email) => {
 
