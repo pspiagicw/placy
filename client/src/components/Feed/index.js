@@ -31,4 +31,3 @@ const Feed = ({ feedData }) => {
 }
 
 export default Feed;
-
