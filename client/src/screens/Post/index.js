@@ -1,9 +1,10 @@
-import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Platform, ScrollView, StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native'
 import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Feed from '../../components/Feed'
 import PostItem from '../../components/Feed/PostItem'
 import Comments from '../../components/Feed/Comments'
+import colors from '../../theme/colors'
 
 const Post = ({ route, navigation }) => {
     const { id } = route.params || ""
@@ -48,9 +49,12 @@ const Post = ({ route, navigation }) => {
     return (
         <SafeAreaView style={{ flex: 1, width: Platform.OS == 'web' ? '50%' : '100%', alignSelf: 'center', }}>
             <ScrollView>
-                <PostItem id={dummyPostData.id} user={dummyPostData.user} post={dummyPostData.post} postedAt={dummyPostData.postedAt} comments={dummyPostData.comments} imageZoomStatus={imageZoomStatus} setImageZoomStatus={setImageZoomStatus} likes={dummyPostData.likes} photoUrl={dummyPostData.photoUrl} />
+                <PostItem id={dummyPostData.id} user={dummyPostData.user} post={dummyPostData.post} postedAt={dummyPostData.postedAt} comments={dummyPostData.comments} imageZoomStatus={imageZoomStatus} setImageZoomStatus={setImageZoomStatus} likes={dummyPostData.likes} photoUrl={dummyPostData.photoUrl} isShownInDiscover={false} />
                 <Comments comments={dummyComments} />
             </ScrollView>
+            <TouchableOpacity activeOpacity={0.7} style={{ height: 50, justifyContent: 'center', marginHorizontal: 10, }}>
+                <Text style={{ color: colors.tertiary, backgroundColor: colors.secondary, padding: 10, paddingHorizontal: 20, borderRadius: 20 }}>Add a comment</Text>
+            </TouchableOpacity>
 
         </SafeAreaView>
     )

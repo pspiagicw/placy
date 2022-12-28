@@ -1,11 +1,10 @@
 import { useEffect } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View , Text} from "react-native";
 import { NavigationContainer } from "@react-navigation/native/"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createDrawerNavigator } from "@react-navigation/drawer";
-import { Text } from "react-native-paper";
 import { useDispatch, useSelector } from "react-redux";
 import { Entypo, Ionicons } from "@expo/vector-icons";
 import Auth from "../screens/Auth"
@@ -27,6 +26,7 @@ const Routes = () => {
     const isLoading = useSelector(state => state.auth.isLoading);
     const isSignedIn = useSelector(state => state.auth.isLoggedIn);
     const AuthStack = createNativeStackNavigator();
+    const AppStack = createNativeStackNavigator();
     const Tab = createBottomTabNavigator();
     const Drawer = createDrawerNavigator();
 
@@ -40,21 +40,27 @@ const Routes = () => {
 
     const AuthStackScreens = () => (
         <AuthStack.Navigator screenOptions={{ animation: "slide_from_right" }}>
-            <AuthStack.Screen name="Auth" component={Auth} />
+            <AuthStack.Screen name="Auth" component={Auth} options={{ headerShown: false }} />
             <AuthStack.Screen name="Forgot" component={ForgotPassword} />
             <AuthStack.Screen name="Verification" component={VerifyPassword} />
         </AuthStack.Navigator>
     )
 
+    const AppStackScreens = () => (
+        <AppStack.Navigator>
+            <AppStack.Screen name="Home" component={HomeTabs} options={{ headerShown: false }} />
+            <AppStack.Screen name="Post" component={Post} options={{ headerShown: false, }} />
+        </AppStack.Navigator>
+    )
+
     const HomeMobileStack = () => {
         return <Drawer.Navigator drawerContent={props => <CustomDrawer {...props} />}>
-            <Drawer.Screen name="Post" component={Post} options={{headerShown:false}}/>
             <Drawer.Screen name="Discover" component={Discover} />
             <Drawer.Screen name="Community" component={Community} />
         </Drawer.Navigator>
     }
 
-    const TabScreens = () => (
+    const HomeTabs = () => (
         <Tab.Navigator screenOptions={{
             // tabBarStyle: {
             //     position: 'absolute',
@@ -100,7 +106,7 @@ const Routes = () => {
                         </View>
                     }
                     {!isLoading && !isSignedIn && <AuthStackScreens />}
-                    {!isLoading && isSignedIn && <TabScreens />}
+                    {!isLoading && isSignedIn && <AppStackScreens />}
                 </View>
             </NavigationContainer>
         </SafeAreaProvider>

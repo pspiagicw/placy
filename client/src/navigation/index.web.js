@@ -1,10 +1,9 @@
 import { useEffect } from "react";
-import { Platform, View } from "react-native";
+import { Platform, View, Text } from "react-native";
 import { NavigationContainer } from "@react-navigation/native/"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Text } from "react-native-paper";
 import { useDispatch, useSelector } from "react-redux";
 import { Entypo, Ionicons } from "@expo/vector-icons";
 import Auth from "../screens/Auth"

@@ -4,7 +4,7 @@ import { Entypo, Ionicons } from '@expo/vector-icons'
 import colors from '../../theme/colors'
 import ImageViewer from 'react-native-image-zoom-viewer'
 
-const PostItem = ({ id, user, postedAt, post, photoUrl, likes, comments, imageZoomStatus, setImageZoomStatus }) => {
+const PostItem = ({ id, user, postedAt, post, photoUrl, likes, comments, imageZoomStatus, setImageZoomStatus, isShownInDiscover = true }) => {
 
     const openModal = () =>
         setImageZoomStatus({ id: id, isOpen: true })
@@ -16,7 +16,7 @@ const PostItem = ({ id, user, postedAt, post, photoUrl, likes, comments, imageZo
 
     const isModalVisible = (imageZoomStatus.id == id && imageZoomStatus.isOpen)
 
-    return <View style={postStyles.container}>
+    return <View style={{ ...postStyles.container, backgroundColor: isShownInDiscover ? '#fff' : 'none' }}>
         <View style={postStyles.headerContainer}>
             <Image style={postStyles.profilePhoto} source={{ uri: user.profilePhotoUrl }} />
             <View style={postStyles.infoContainer}>
@@ -78,7 +78,6 @@ const postStyles = StyleSheet.create({
     },
     container: {
         ...margin(16, 16, 0, 16),
-        backgroundColor: '#fff',
         borderRadius: 6,
         padding: 8,
     },

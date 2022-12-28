@@ -1,15 +1,14 @@
-import { StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View, Button } from 'react-native'
 import React, { useState } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDispatch } from 'react-redux';
 import { logoutUser } from '../../store/reducers/authSlice';
-import { Button } from 'react-native-paper';
 import useAuthService from '../../hooks/api/authService';
 import Feed from '../../components/Feed';
 
 import feedData from '../../dummy-data/feedData'
 
-const Discover = () => {
+const Discover = ({ navigation }) => {
 
     const authService = useAuthService();
     const [tokenFromStorage, setTokenFromStorage] = useState('')
@@ -18,10 +17,10 @@ const Discover = () => {
     const dispatch = useDispatch();
 
     return (<View style={{ flex: 1 }}>
-        <Feed feedData={feedData} />
+        <Feed feedData={feedData} navigation={navigation} />
         <Text>token from store {authService.token}</Text>
         <Text>token from storage {tokenFromStorage}</Text>
-        <Button onPress={() => dispatch(logoutUser())}><Text>Logout</Text></Button>
+        <Button title='Logout' onPress={() => dispatch(logoutUser())} />
     </View>)
 }
 
