@@ -11,7 +11,7 @@ const Home = ({ navigation }) => {
                 <LeftSidebar navigation={navigation} />
             </View>
             <View style={{ flex: 0.55, paddingHorizontal: 20, paddingTop: 10, backgroundColor: '#ebecf3', }}>
-                <MainFeed />
+                <MainFeed navigation={navigation}/>
             </View>
             <View style={{ flex: 0.25, padding: 20, paddingTop: 10 , }}>
                 <RightSidebar />

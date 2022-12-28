@@ -13,7 +13,7 @@ const Feed = ({ feedData, navigation }) => {
             keyExtractor={item => item.id.toString()}
             renderItem={({ item }) => {
                 const { id, user, postedAt, post, photoUrl, likes, comments } = item;
-                return <TouchableOpacity onPress={() => navigation.navigate("Post", { id })}>
+                return <TouchableOpacity onPress={() => navigation.navigate("Post", { id })} activeOpacity={0.7}>
                     <PostItem id={id} user={user} postedAt={postedAt} post={post} photoUrl={photoUrl} likes={likes} comments={comments} imageZoomStatus={imageZoomStatus} setImageZoomStatus={setImageZoomStatus} />
                 </TouchableOpacity>
             }}

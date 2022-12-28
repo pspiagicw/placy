@@ -10,10 +10,14 @@ const useAuthService = () => {
 
     const tokenFromStore = useSelector(state => state.auth.token)
 
-    const signup = async (email, password) => {
+    const login = async () => {
+
+    }
+
+    const signup = async (username, email, password) => {
         try {
             const unauthenticatedAxios = getUnauthenticatedAxios('/auth')
-            // const data = await unauthenticatedAxios.post('/signup', { email, password });
+            // const response = await unauthenticatedAxios.post('/signup', { username, email, password })
             const data = { token: Math.random().toString() }
             const token = data['token'];
             dispatch(loginUser(token))
