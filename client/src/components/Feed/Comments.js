@@ -58,22 +58,18 @@ const CommentComponent = ({ comment }) => {
             </View>
             <View style={{ flexDirection: 'row', alignSelf: 'flex-end', alignItems: 'center', justifyContent: 'space-evenly', marginBottom: 20 }}>
                 <Octicons name="reply" size={16} color="black" style={{ marginRight: 10 }} />
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 10 }}>
-                    <TouchableOpacity onPress={!isLiked ? like : unlike}>
-                        {isLiked ?
-                            <AntDesign name="like1" size={16} color="black" />
-                            :
-                            <AntDesign name="like2" size={16} color="black" />
-                        }
-                    </TouchableOpacity>
+                <TouchableOpacity onPress={!isLiked ? like : unlike} style={{ flexDirection: 'row', alignItems: 'center', marginRight: 10 }}>
+                    {isLiked ?
+                        <AntDesign name="like1" size={16} color="black" />
+                        :
+                        <AntDesign name="like2" size={16} color="black" />
+                    }
                     <Text>{likes}</Text>
-                </View>
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 10 }}>
-                    <TouchableOpacity onPress={!isDisliked ? dislike : undislike}>
-                        <AntDesign name={isDisliked ? "dislike1" : "dislike2"} size={16} color="black" />
-                    </TouchableOpacity>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={!isDisliked ? dislike : undislike} style={{ flexDirection: 'row', alignItems: 'center', marginRight: 10 }}>
+                    <AntDesign name={isDisliked ? "dislike1" : "dislike2"} size={16} color="black" />
                     <Text>{dislikes}</Text>
-                </View>
+                </TouchableOpacity>
             </View>
             {isChildrenExpanded && children && children.length > 0 && children.map(child => <CommentComponent comment={child} key={child.id} />)}
             {
