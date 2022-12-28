@@ -8,7 +8,8 @@ from placy.controllers.auth import AuthController
 from placy.models.response import Health
 from placy.routes.auth import setupAuthRoutes
 from placy.services.config import Config
-from placy.services.database import DatabaseService
+from placy.services.databases.auth_repository import AuthRepository
+from placy.services.databases.otp_repository import OTPRepository
 from placy.services.email import EmailService
 from placy.services.logging import LoggingService
 
@@ -19,23 +20,25 @@ class Placy:
     def __init__(
         self,
         app: FastAPI,
-        databaseService: DatabaseService,
+        authRepo: AuthRepository,
+        otpRepo: OTPRepository,
         loggingService: LoggingService,
         emailService: EmailService,
         config: Config,
         authController: AuthController,
     ) -> None:
         """Construct for the Application class."""
-        self.db_service = databaseService
+        self.auth_repo = authRepo
         self.app = app
         self.config = config
         self.logging_service = loggingService
         self.authController = authController
         self.emailService = emailService
+        self.otp_repo = otpRepo
 
     def setup(self) -> None:
         """Perform initialization for backend application."""
-        self.db_service.setup()
+        self.auth_repo.setup()
         self.logging_service.setup()
 
     def routes(self) -> None:

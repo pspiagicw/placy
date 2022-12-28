@@ -2,7 +2,7 @@
 
 import random
 from collections import namedtuple
-from datetime import datetime, timedelta
+from datetime import datetime
 from http import HTTPStatus
 from typing import Any, Tuple
 
@@ -19,7 +19,8 @@ from placy.models.response import (
     JWTRefreshResponse,
 )
 from placy.services.config import Config
-from placy.services.database import DatabaseService
+from placy.services.databases.auth_repository import AuthRepository
+from placy.services.databases.otp_repository import OTPRepository
 from placy.services.email import EmailService
 from placy.services.logging import LoggingService
 from pydantic import EmailStr
@@ -32,15 +33,17 @@ class AuthController:
 
     def __init__(
         self,
-        db: DatabaseService,
+        auth_repo: AuthRepository,
+        otp_repo: OTPRepository,
         config: Config,
-        email: EmailService,
+        emailService: EmailService,
         logging: LoggingService,
     ):
         """Construct the Router class."""
-        self.db = db
+        self.auth_repo = auth_repo
+        self.otp_repo = otp_repo
         self.config = config
-        self.email = email
+        self.email = emailService
         self.logger = logging
 
     def generate_hash(self, password: str) -> str:
@@ -67,7 +70,7 @@ class AuthController:
 
     def reset(self, update: PasswordUpdate) -> ErrorResponse:
         """Route to handle reset password requests."""
-        otp = self.db.search_otp(update.email)
+        otp = self.otp_repo.search_otp(update.email)
 
         self.logger.log_info(f"Searched for a otp belonging to: {update.email}")
 
@@ -90,7 +93,7 @@ class AuthController:
         hash = self.generate_hash(update.new_password)
 
         self.logger.log_info(f"Updating user password for: {update.email}")
-        result = self.db.update_user_password(email=update.email, password=hash)
+        result = self.auth_repo.update_user_password(email=update.email, password=hash)
 
         if result.status != HTTPStatus.OK:
             self.logger.log_error(
@@ -110,7 +113,7 @@ class AuthController:
         otp = self.generate_otp(email)
         self.logger.log_info(f"Generated a OTP for user {email}")
 
-        (id, errmsg, status_code) = self.db.add_otp(otp)
+        (id, errmsg, status_code) = self.otp_repo.add_otp(otp)
 
         if id == "":
             self.logger.log_error("Error adding OTP to the database.")
@@ -168,7 +171,7 @@ class AuthController:
             updated_at=datetime.now(),
         )
 
-        db_response = self.db.add_user(user)
+        db_response = self.auth_repo.add_user(user)
 
         if (
             db_response.status != HTTPStatus.OK
@@ -191,7 +194,7 @@ class AuthController:
 
     def login(self, auth: Auth) -> AuthResponse | ErrorResponse:
         """Route to handle user signin."""
-        foundUser = self.db.search_user(auth.email)
+        foundUser = self.auth_repo.search_user(auth.email)
 
         if foundUser == None:
             return ErrorResponse(

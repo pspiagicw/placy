@@ -8,7 +8,8 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from placy.controllers.auth import AuthController
 from placy.services.config import Config
-from placy.services.database import MongoService
+from placy.services.databases.auth_repository import AuthRepository
+from placy.services.databases.otp_repository import OTPRepository
 from placy.services.email import EmailService
 from placy.services.logging import DefaultLogger
 
@@ -37,12 +38,19 @@ env = {
 }
 config = Config(mongo_uri=env["MONGO_URI"], sendgrid_api_key=env["SENDGRID_API_KEY"])
 logger = DefaultLogger(config)
-database = MongoService(logger)
+auth_repo = AuthRepository(logger)
+otp_repo = OTPRepository(logger, auth_repo)
 email = MockEmailService(config)
-authController = AuthController(database, config, email, logging=logger)
+authController = AuthController(
+    auth_repo=auth_repo,
+    otp_repo=otp_repo,
+    config=config,
+    emailService=email,
+    logging=logger,
+)
 placy = Placy(
     app=app,
-    databaseService=database,
+    authRepo=auth_repo,
     loggingService=logger,
     config=config,
     authController=authController,
