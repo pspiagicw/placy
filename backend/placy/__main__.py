@@ -5,6 +5,8 @@ from fastapi import FastAPI
 from placy.controllers.auth import AuthController
 from placy.services.config import Config
 from placy.services.databases.auth_repository import AuthRepository
+from placy.services.databases.community_repo import CommunityRepository
+from placy.controllers.community import CommunityController
 from placy.services.databases.otp_repository import OTPRepository
 from placy.services.email import SendGridService
 from placy.services.logging import DefaultLogger
@@ -21,21 +23,27 @@ if __name__ == "__main__":
     logger = DefaultLogger(config)
     auth_repo = AuthRepository(logger)
     otp_repo = OTPRepository(authRepo=auth_repo, logger=logger)
+    community_repo = CommunityRepository()
     email = SendGridService(config, logger)
-    router = AuthController(
+    auth_controller = AuthController(
         otp_repo=otp_repo,
         auth_repo=auth_repo,
         config=config,
         emailService=email,
         logging=logger,
     )
+    community_controller = CommunityController(
+        logging=logger, community_repo=community_repo
+    )
     placy = Placy(
+        communityRepo=community_repo,
+        communityController=community_controller,
         authRepo=auth_repo,
         otpRepo=otp_repo,
         app=app,
         loggingService=logger,
         config=config,
-        authController=router,
+        authController=auth_controller,
         emailService=email,
     )
     placy.setup()

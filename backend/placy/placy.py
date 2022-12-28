@@ -5,10 +5,13 @@ from fastapi import FastAPI
 from fastapi import Response as Response
 from fastapi.staticfiles import StaticFiles
 from placy.controllers.auth import AuthController
+from placy.controllers.community import CommunityController
 from placy.models.response import Health
 from placy.routes.auth import setupAuthRoutes
+from placy.routes.community import setupCommunityRoutes
 from placy.services.config import Config
 from placy.services.databases.auth_repository import AuthRepository
+from placy.services.databases.community_repo import CommunityRepository
 from placy.services.databases.otp_repository import OTPRepository
 from placy.services.email import EmailService
 from placy.services.logging import LoggingService
@@ -26,6 +29,8 @@ class Placy:
         emailService: EmailService,
         config: Config,
         authController: AuthController,
+        communityController: CommunityController,
+        communityRepo: CommunityRepository,
     ) -> None:
         """Construct for the Application class."""
         self.auth_repo = authRepo
@@ -35,6 +40,8 @@ class Placy:
         self.authController = authController
         self.emailService = emailService
         self.otp_repo = otpRepo
+        self.communityController = communityController
+        self.community_repo = communityRepo
 
     def setup(self) -> None:
         """Perform initialization for backend application."""
@@ -56,6 +63,7 @@ class Placy:
         self.app.mount("/code", StaticFiles(directory="docs", html=True), name="docs")
 
         setupAuthRoutes(app=self.app, controller=self.authController)
+        setupCommunityRoutes(app=self.app, controller=self.communityController)
 
     def run(self) -> None:
         """Run the app with given settings."""
