@@ -1,13 +1,18 @@
 name: Continous Integration
 on:
+  push:
+    branches:
+      - main
   pull_request:
+    branches:
+      - main
 
 jobs:
   backend:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./backend
+        working-directory: ./backend/authentication
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python
