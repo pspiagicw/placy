@@ -5,13 +5,10 @@ from fastapi import FastAPI
 from fastapi import Response as Response
 from fastapi.staticfiles import StaticFiles
 from placy.controllers.auth import AuthController
-from placy.controllers.community import CommunityController
 from placy.models.response import Health
 from placy.routes.auth import setupAuthRoutes
-from placy.routes.community import setupCommunityRoutes
 from placy.services.config import Config
 from placy.services.databases.auth_repository import AuthRepository
-from placy.services.databases.community_repo import CommunityRepository
 from placy.services.databases.otp_repository import OTPRepository
 from placy.services.email import EmailService
 from placy.services.logging import LoggingService

@@ -5,8 +5,6 @@ from fastapi import FastAPI
 from placy.controllers.auth import AuthController
 from placy.services.config import Config
 from placy.services.databases.auth_repository import AuthRepository
-from placy.services.databases.community_repo import CommunityRepository
-from placy.controllers.community import CommunityController
 from placy.services.databases.otp_repository import OTPRepository
 from placy.services.email import SendGridService
 from placy.services.logging import DefaultLogger
