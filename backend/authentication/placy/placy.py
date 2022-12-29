@@ -29,8 +29,6 @@ class Placy:
         emailService: EmailService,
         config: Config,
         authController: AuthController,
-        communityController: CommunityController,
-        communityRepo: CommunityRepository,
     ) -> None:
         """Construct for the Application class."""
         self.auth_repo = authRepo
@@ -40,8 +38,6 @@ class Placy:
         self.authController = authController
         self.emailService = emailService
         self.otp_repo = otpRepo
-        self.communityController = communityController
-        self.community_repo = communityRepo
 
     def setup(self) -> None:
         """Perform initialization for backend application."""
@@ -63,7 +59,6 @@ class Placy:
         self.app.mount("/code", StaticFiles(directory="docs", html=True), name="docs")
 
         setupAuthRoutes(app=self.app, controller=self.authController)
-        setupCommunityRoutes(app=self.app, controller=self.communityController)
 
     def run(self) -> None:
         """Run the app with given settings."""

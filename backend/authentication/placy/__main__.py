@@ -23,7 +23,6 @@ if __name__ == "__main__":
     logger = DefaultLogger(config)
     auth_repo = AuthRepository(logger)
     otp_repo = OTPRepository(authRepo=auth_repo, logger=logger)
-    community_repo = CommunityRepository()
     email = SendGridService(config, logger)
     auth_controller = AuthController(
         otp_repo=otp_repo,
@@ -32,12 +31,7 @@ if __name__ == "__main__":
         emailService=email,
         logging=logger,
     )
-    community_controller = CommunityController(
-        logging=logger, community_repo=community_repo
-    )
     placy = Placy(
-        communityRepo=community_repo,
-        communityController=community_controller,
         authRepo=auth_repo,
         otpRepo=otp_repo,
         app=app,

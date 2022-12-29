@@ -49,6 +49,7 @@ authController = AuthController(
     logging=logger,
 )
 placy = Placy(
+    otpRepo=otp_repo,
     app=app,
     authRepo=auth_repo,
     loggingService=logger,
