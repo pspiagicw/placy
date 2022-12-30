@@ -20,7 +20,7 @@ if __name__ == "__main__":
     )
     logger = DefaultLogger(config)
     auth_repo = AuthRepository(logger, config)
-    otp_repo = OTPRepository(authRepo=auth_repo, logger=logger)
+    otp_repo = OTPRepository(authRepo=auth_repo, logger=logger, config=config)
     email = SendGridService(config, logger)
     auth_controller = AuthController(
         otp_repo=otp_repo,

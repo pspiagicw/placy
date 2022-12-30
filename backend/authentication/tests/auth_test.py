@@ -39,7 +39,7 @@ env = {
 config = Config(mongo_uri=env["MONGO_URI"], sendgrid_api_key=env["SENDGRID_API_KEY"])
 logger = DefaultLogger(config)
 auth_repo = AuthRepository(logger, config)
-otp_repo = OTPRepository(logger, auth_repo)
+otp_repo = OTPRepository(logger, auth_repo, config)
 email = MockEmailService(config)
 authController = AuthController(
     auth_repo=auth_repo,
