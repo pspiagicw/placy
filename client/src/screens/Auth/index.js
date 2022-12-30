@@ -4,7 +4,7 @@ import useAuthService from '../../hooks/api/authService'
 import sharedStyles from './sharedStyles'
 
 import Login from './Login'
-import Signup from './SignUp'
+import Signup from './Signup'
 
 const Auth = ({ navigation }) => {
     const [isLoggingIn, setIsLoggingIn] = useState(true)

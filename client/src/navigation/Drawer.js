@@ -1,5 +1,5 @@
 import { DrawerContentScrollView, DrawerItem } from "@react-navigation/drawer";
-import { Text } from "react-native-paper";
+import { Text } from "react-native";
 
 const CustomDrawer = ({ navigation, ...props }) => {
     const getMockCommunities = () => {

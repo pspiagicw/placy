@@ -20,6 +20,9 @@ const config = {
         },
         Post: {
             path: "post/:id"
+        },
+        ReactToPost: {
+            path: "react",
         }
     }
 }
