@@ -5,6 +5,7 @@ from http import HTTPStatus
 
 from mongoengine import connect
 from placy.models.auth_orm import OTP
+from placy.services.config import Config
 from placy.services.databases.auth_repository import AuthRepository
 from placy.services.logging import LoggingService
 
@@ -14,13 +15,17 @@ DatabaseResponse = namedtuple("DatabaseResponse", ["status", "data", "errmsg"])
 class OTPRepository:
     """Repository for OTP."""
 
-    def __init__(self, logger: LoggingService, authRepo: AuthRepository):
+    def __init__(
+        self, logger: LoggingService, authRepo: AuthRepository, config: Config
+    ):
         """Construct the OTP Repostory."""
         self.logger = logger
         self.auth_repo = authRepo
+        self.config = config
 
     def setup(self) -> None:
         """Connect to MongoDB."""
+        connection_url = self.config.mongo_uri + "/placy"
         connect(db="placy")
 
     def add_otp(self, otp: OTP) -> DatabaseResponse:

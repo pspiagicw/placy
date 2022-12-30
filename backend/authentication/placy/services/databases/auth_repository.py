@@ -6,6 +6,7 @@ from http import HTTPStatus
 from mongoengine import connect
 from mongoengine.errors import NotUniqueError
 from placy.models.auth_orm import User
+from placy.services.config import Config
 from placy.services.logging import LoggingService
 
 DatabaseResponse = namedtuple("DatabaseResponse", ["status", "errmsg", "data"])
@@ -14,14 +15,16 @@ DatabaseResponse = namedtuple("DatabaseResponse", ["status", "errmsg", "data"])
 class AuthRepository:
     """Implemented subclass to manage connection with MongoDB."""
 
-    def __init__(self, logger: LoggingService):
+    def __init__(self, logger: LoggingService, config: Config):
         """Construct the Mongo Service class."""
         self.logger = logger
+        self.config = config
         super().__init__()
 
     def setup(self) -> None:
         """Connect to MongoDB."""
-        connect(db="placy")
+        connection_url = self.config.mongo_uri + "/placy"
+        connect(host=connection_url)
 
     def add_user(self, user: User) -> DatabaseResponse:
         """Add a user into MongoDB database."""

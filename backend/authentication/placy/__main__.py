@@ -19,7 +19,7 @@ if __name__ == "__main__":
         sendgrid_api_key=env["SENDGRID_API_KEY"] if "SENDGRID_API_KEY" in env else "",
     )
     logger = DefaultLogger(config)
-    auth_repo = AuthRepository(logger)
+    auth_repo = AuthRepository(logger, config)
     otp_repo = OTPRepository(authRepo=auth_repo, logger=logger)
     email = SendGridService(config, logger)
     auth_controller = AuthController(
