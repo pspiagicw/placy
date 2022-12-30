@@ -15,6 +15,7 @@ import Home from "../screens/HomeWeb";
 import Settings from "../screens/Settings";
 import Announcements from "../screens/Announcements";
 import Post from "../screens/Post";
+import ReactToPost from "../screens/ReactToPost";
 
 
 const Routes = () => {
@@ -46,6 +47,7 @@ const Routes = () => {
             <HomeStack.Screen name="Announcement" component={Announcements} />
             <HomeStack.Screen name="Settings" component={Settings} />
             <HomeStack.Screen name="Post" component={Post} />
+            <HomeStack.Screen name="ReactToPost" component={ReactToPost} options={({ route }) => ({ title: route.params.title })} />
         </HomeStack.Navigator>
     )
 

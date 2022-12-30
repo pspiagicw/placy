@@ -10,15 +10,18 @@ import dummyComments from '../../dummy-data/commentsData'
 import Scrollbars from 'react-custom-scrollbars'
 
 const Post = ({ route, navigation }) => {
+    const Scrollable = ({ children }) => <>
+        {Platform.OS == 'web' ? <Scrollbars>{children}</Scrollbars> : <ScrollView overScrollMode='never'>{children}</ScrollView>}
+    </>
+
     const { id } = route.params || ""
     console.log(id)
 
     const [imageZoomStatus, setImageZoomStatus] = useState({ id: undefined, isOpen: false })
 
-
-    const Scrollable = ({ children }) => <>
-        {Platform.OS == 'web' ? <Scrollbars>{children}</Scrollbars> : <ScrollView overScrollMode='never'>{children}</ScrollView>}
-    </>
+    const handleUserComment = (id) => {
+        navigation.navigate("ReactToPost", { title: "Comment", id })
+    }
 
 
     return (
@@ -27,7 +30,7 @@ const Post = ({ route, navigation }) => {
                 <PostItem id={dummyPostData.id} user={dummyPostData.user} post={dummyPostData.post} postedAt={dummyPostData.postedAt} comments={dummyPostData.comments} imageZoomStatus={imageZoomStatus} setImageZoomStatus={setImageZoomStatus} likes={dummyPostData.likes} photoUrl={dummyPostData.photoUrl} isShownInDiscover={false} />
                 <Comments comments={dummyComments} />
             </Scrollable>
-            <TouchableOpacity activeOpacity={0.7} style={{ height: 50, justifyContent: 'center', marginHorizontal: 10, }}>
+            <TouchableOpacity activeOpacity={0.7} style={{ height: 50, justifyContent: 'center', marginHorizontal: 10, }} onPress={() => handleUserComment(dummyPostData.id)}>
                 <Text style={{ color: colors.tertiary, backgroundColor: colors.secondary, padding: 10, paddingHorizontal: 20, borderRadius: 20 }}>Add a comment</Text>
             </TouchableOpacity>
 

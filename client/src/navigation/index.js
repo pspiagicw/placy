@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { StyleSheet, View , Text} from "react-native";
+import { StyleSheet, View, Text } from "react-native";
 import { NavigationContainer } from "@react-navigation/native/"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -19,6 +19,7 @@ import Community from "../screens/Community";
 import Announcements from "../screens/Announcements"
 import Settings from "../screens/Settings"
 import Post from "../screens/Post";
+import ReactToPost from "../screens/ReactToPost";
 
 
 const Routes = () => {
@@ -50,6 +51,7 @@ const Routes = () => {
         <AppStack.Navigator>
             <AppStack.Screen name="Home" component={HomeTabs} options={{ headerShown: false }} />
             <AppStack.Screen name="Post" component={Post} options={{ headerShown: false, }} />
+            <AppStack.Screen name="ReactToPost" component={ReactToPost} options={({ route }) => ({ title: route.params.title })} />
         </AppStack.Navigator>
     )
 

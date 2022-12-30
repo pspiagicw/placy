@@ -4,7 +4,7 @@ import { Entypo, Ionicons } from '@expo/vector-icons'
 import colors from '../../theme/colors'
 import ImageViewer from 'react-native-image-zoom-viewer'
 
-const PostItem = ({ id, user, postedAt, post, photoUrl, likes, comments, imageZoomStatus, setImageZoomStatus, isShownInDiscover = true }) => {
+const PostItem = ({ id, user, postedAt, post, photoUrl, likes, comments, imageZoomStatus, setImageZoomStatus, isShownInDiscover = true, navigation }) => {
 
     const openModal = () =>
         setImageZoomStatus({ id: id, isOpen: true })
@@ -13,6 +13,8 @@ const PostItem = ({ id, user, postedAt, post, photoUrl, likes, comments, imageZo
     const closeModal = () =>
         setImageZoomStatus(prev => ({ ...prev, isOpen: false }))
 
+    const handleCommentPress = () =>
+        navigation.navigate("Post")
 
     const isModalVisible = (imageZoomStatus.id == id && imageZoomStatus.isOpen)
 
@@ -51,12 +53,12 @@ const PostItem = ({ id, user, postedAt, post, photoUrl, likes, comments, imageZo
                     </TouchableOpacity>
                     <Text style={{ fontSize: 11, ...margin(0, 0, 0, 8), padding: 0, color: '#0f0f0f' }}>{likes}</Text>
                 </View>
-                <View style={postStyles.comments}>
-                    <TouchableOpacity>
+                {isShownInDiscover && <View style={postStyles.comments}>
+                    <TouchableOpacity onPress={handleCommentPress}>
                         <Ionicons name="ios-chatbox-outline" size={24} color={colors.secondary} />
                     </TouchableOpacity>
                     <Text style={{ fontSize: 11, ...margin(0, 0, 0, 8), padding: 0, color: '#0f0f0f' }}>{comments}</Text>
-                </View>
+                </View>}
             </View>
         </View>
     </View>
