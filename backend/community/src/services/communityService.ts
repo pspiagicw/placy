@@ -1,8 +1,9 @@
 import { ICommunityInputDTO } from '@/interfaces/ICommunity';
 import { CommunityRepository } from '@/repositories/communityRepository';
-import { Inject } from 'typedi';
+import { Inject, Service } from 'typedi';
 import { Logger } from 'winston';
 
+@Service()
 export default class CommunityService {
   protected communityRepositoryInstance: CommunityRepository;
 
